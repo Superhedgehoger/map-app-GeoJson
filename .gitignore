@@ -1,3 +1,14 @@
+# 测试数据（绝不上传）
+/data/
+/test-data/
+/mock/
+*.csv
+*.xlsx
+*.xls
+
+# 保留示例文件
+!example.geojson
+
 # 依赖和缓存
 node_modules/
 __pycache__/
@@ -23,3 +34,7 @@ npm-debug.log*
 # 临时文件
 *.tmp
 *.temp
+
+# 打包产物
+/dist/
+/build/

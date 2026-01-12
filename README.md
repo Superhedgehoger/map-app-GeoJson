@@ -1,5 +1,9 @@
 # GeoJSON 地图编辑器 - 使用指南
 
+[![Version](https://img.shields.io/badge/version-v2.4.0-blue.svg)](CHANGELOG.md)
+
+> ⚠️ **隐私声明**：本项目不包含任何真实或测试业务数据，仅提供代码结构与功能实现。
+
 ## 🎉 新功能概览
 
 现在你的地图应用已经升级为功能完整的 **GeoJSON 编辑器**，类似 geojson.io！
