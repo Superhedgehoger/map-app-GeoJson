@@ -756,6 +756,13 @@ function bindMarkerContextMenu(marker) {
 
     // 左键：高亮标记并设置为选中，Ctrl+左键打开属性抽屉
     marker.on('click', e => {
+        // 检查是否处于多选模式
+        if (typeof customGroupManager !== 'undefined' && customGroupManager && customGroupManager.selectionMode) {
+            L.DomEvent.stopPropagation(e);
+            customGroupManager.toggleMarkerSelection(marker);
+            return;
+        }
+
         // 使用 SelectionManager 统一管理选中状态
         if (typeof selectionManager !== 'undefined') {
             selectionManager.select(marker);

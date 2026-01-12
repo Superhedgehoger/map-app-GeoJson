@@ -2796,3 +2796,211 @@ body {
 .layer-item.hidden .layer-btn-main {
     text-decoration: line-through;
 }
+
+/* ==== Custom Group Management Styles ==== */
+
+/* Selection Mode Body Class */
+body.selection-mode #map {
+    cursor: crosshair;
+}
+
+body.selection-mode .marker-pin {
+    cursor: pointer;
+}
+
+/* Multi-select Mode Indicator */
+body.selection-mode::before {
+    content: "📦 选择模式 - 点击标记加入组";
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(74, 144, 226, 0.95);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9999;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    animation: fadeInDown 0.3s ease;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* Selection Highlight for Markers */
+.marker-pin.selection-highlight {
+    box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.8), 0 0 20px rgba(255, 107, 107, 0.6) !important;
+    animation: selectionPulse 1s infinite;
+}
+
+@keyframes selectionPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.8), 0 0 20px rgba(255, 107, 107, 0.6);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(255, 107, 107, 0.6), 0 0 30px rgba(255, 107, 107, 0.4);
+    }
+}
+
+/* Custom Group Section */
+.custom-group-section {
+    margin-top: 10px;
+}
+
+.custom-group-section h3 {
+    font-size: 0.95rem;
+    color: #fff;
+    margin: 0 0 10px 0;
+    font-weight: 600;
+}
+
+.group-selection-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.group-selection-controls button {
+    background: linear-gradient(135deg, #4a90e2, #357ab8);
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.group-selection-controls button:hover {
+    background: linear-gradient(135deg, #357ab8, #2968a3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+}
+
+#finishSelectionBtn {
+    background: linear-gradient(135deg, #27ae60, #1e8449) !important;
+}
+
+#finishSelectionBtn:hover {
+    background: linear-gradient(135deg, #1e8449, #196f3d) !important;
+}
+
+#selectionCount {
+    font-size: 0.85rem;
+    color: #ff6b6b;
+    font-weight: 600;
+    text-align: center;
+    padding: 6px;
+    background: rgba(255, 107, 107, 0.15);
+    border-radius: 4px;
+}
+
+/* Custom Group List */
+.custom-group-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.empty-groups {
+    color: #666;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 15px;
+    font-style: italic;
+}
+
+.custom-group-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+    border-left: 4px solid #ff6b6b;
+}
+
+.custom-group-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.group-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    flex: 1;
+}
+
+.group-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.group-name {
+    font-weight: 500;
+    color: #f0f0f0;
+    font-size: 0.9rem;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.group-count {
+    background: rgba(255, 107, 107, 0.3);
+    color: #ff6b6b;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.group-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.group-actions button {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    color: #aaa;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+}
+
+.group-actions button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.group-actions button.delete:hover {
+    background: rgba(231, 76, 60, 0.3);
+    color: #e74c3c;
+}

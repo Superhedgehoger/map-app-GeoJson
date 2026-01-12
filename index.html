@@ -167,6 +167,27 @@
                 <button onclick="saveCurrentArchive()">保存</button>
             </div>
         </div>
+
+        <hr class="divider">
+
+        <!-- 自定义组管理 -->
+        <div class="custom-group-section">
+            <h3>📦 自定义组</h3>
+            <div class="group-selection-controls">
+                <button id="enterSelectionModeBtn"
+                    onclick="customGroupManager && customGroupManager.enterSelectionMode()">
+                    <i class="fa-solid fa-object-group"></i> 选择标记创建组
+                </button>
+                <button id="finishSelectionBtn" style="display:none;"
+                    onclick="customGroupManager && customGroupManager.finishSelectionAndCreateGroup()">
+                    <i class="fa-solid fa-check"></i> 完成选择
+                </button>
+                <span id="selectionCount" style="display:none;"></span>
+            </div>
+            <div id="customGroupList" class="custom-group-list">
+                <div class="empty-groups">暂无自定义组</div>
+            </div>
+        </div>
     </div>
 
 
@@ -537,6 +558,8 @@
     <script src="selection-manager.js"></script>
     <!-- Layer Statistics -->
     <script src="layer-stats.js"></script>
+    <!-- Custom Group Manager -->
+    <script src="custom-group-manager.js"></script>
     <script src="script.js"></script>
     <script src="property-editor.js"></script>
     <script src="table-view.js"></script>

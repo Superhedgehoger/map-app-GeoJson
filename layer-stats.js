@@ -46,6 +46,12 @@ function updateLayerStats() {
         });
     }
 
+    // 计算自定义组数量
+    let customGroupCount = 0;
+    if (typeof customGroupManager !== 'undefined' && customGroupManager) {
+        customGroupCount = customGroupManager.groups.size;
+    }
+
     // 生成 HTML
     const total = markers.length;
     const typeEntries = Object.entries(typeCount).sort((a, b) => b[1] - a[1]);
@@ -54,7 +60,8 @@ function updateLayerStats() {
         <div class="stats-header">
             <span class="stats-total">${total}</span>
             <span class="stats-label">个标记</span>
-            ${groupCount > 0 ? `<span class="stats-group-badge">${groupCount} 个组</span>` : ''}
+            ${groupCount > 0 ? `<span class="stats-group-badge">${groupCount} 个坐标组</span>` : ''}
+            ${customGroupCount > 0 ? `<span class="stats-group-badge custom">${customGroupCount} 个自定义组</span>` : ''}
         </div>
     `;
 
