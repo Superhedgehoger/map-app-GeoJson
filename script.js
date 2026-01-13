@@ -1173,6 +1173,12 @@ function refreshAllViewsAfterImport() {
     }, 100);
 }
 
+// 全局暴露导入相关函数（确保 onclick 可调用）
+window.confirmImport = confirmImport;
+window.closeImportModal = closeImportModal;
+window.resetImportState = resetImportState;
+window.refreshAllViewsAfterImport = refreshAllViewsAfterImport;
+
 // ==== Share Feature ==== //
 let currentShareCanvas = null;
 
