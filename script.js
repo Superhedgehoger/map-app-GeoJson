@@ -1437,6 +1437,10 @@ const controlsPanel = document.getElementById('controls');
 if (toggleToolbarBtn && controlsPanel) {
     toggleToolbarBtn.addEventListener('click', () => {
         controlsPanel.classList.toggle('collapsed');
+
+        // 同步 body 状态类（用于全局 CSS 选择器）
+        document.body.classList.toggle('ui-collapsed', controlsPanel.classList.contains('collapsed'));
+
         // Invalidate map size after animation
         setTimeout(() => map.invalidateSize(), 350);
     });

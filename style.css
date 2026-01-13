@@ -72,8 +72,7 @@ body {
 }
 
 #controls.collapsed .panel-header h2,
-#controls.collapsed .panel-content,
-#controls.collapsed .accordion-section .accordion-content {
+#controls.collapsed .panel-content {
     display: none;
 }
 
@@ -970,6 +969,22 @@ hr.divider {
 
 .leaflet-draw-toolbar .leaflet-disabled>* {
     opacity: 0.5 !important;
+}
+
+/* Leaflet Draw 工具栏定位 - 避免被左侧面板遮挡 */
+.leaflet-draw {
+    z-index: 999 !important;
+}
+
+.leaflet-left .leaflet-draw {
+    margin-left: 320px !important;
+    margin-top: 10px !important;
+}
+
+/* 折叠时恢复默认位置 */
+body.ui-collapsed .leaflet-left .leaflet-draw,
+#controls.collapsed~#map .leaflet-left .leaflet-draw {
+    margin-left: 80px !important;
 }
 
 /* Custom Marker Icon Container */
@@ -3890,12 +3905,14 @@ body.selection-mode::before {
     position: absolute;
     bottom: 70px;
     right: 0;
-    background: rgba(30, 30, 30, 0.98);
-    backdrop-filter: blur(10px);
+    /* 毛玻璃效果 - 半透明背景 */
+    background: rgba(20, 20, 20, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border-radius: 12px;
     padding: 8px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.12);
 
     /* 横向排列 */
     display: flex;
