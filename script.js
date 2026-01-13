@@ -1785,16 +1785,79 @@ addManualMarkerBtn.addEventListener('click', () => {
 });
 
 // Layer panel toggle
-toggleLayerPanelBtn.addEventListener('click', () => {
+toggleLayerPanelBtn.addEventListener('click', toggleLayerPanel);
+
+function toggleLayerPanel() {
     const panel = document.getElementById('layerPanel');
-    if (panel.style.display === 'none' || !panel.style.display) {
-        panel.style.display = 'flex';
-        toggleLayerPanelBtn.textContent = '隐藏图层面板';
-    } else {
-        panel.style.display = 'none';
-        toggleLayerPanelBtn.textContent = '显示图层面板';
+    const btn = document.getElementById('toggleLayerPanelBtn');
+
+    if (panel) {
+        panel.classList.toggle('open');
+
+        if (btn) {
+            const isOpen = panel.classList.contains('open');
+            btn.innerHTML = isOpen
+                ? '<i class="fa-solid fa-layer-group"></i> 隐藏图层面板'
+                : '<i class="fa-solid fa-layer-group"></i> 显示图层面板';
+        }
     }
-});
+}
+window.toggleLayerPanel = toggleLayerPanel;
+
+// 图层分组折叠切换
+function toggleLayerSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+        section.classList.toggle('collapsed');
+    }
+}
+window.toggleLayerSection = toggleLayerSection;
+
+// 图层搜索过滤
+function filterLayers(query) {
+    const layerList = document.getElementById('layerList');
+    const clearBtn = document.querySelector('.btn-clear-search');
+
+    if (!layerList) return;
+
+    const items = layerList.querySelectorAll('.layer-item');
+    const lowerQuery = query.toLowerCase().trim();
+
+    // 显示/隐藏清除按钮
+    if (clearBtn) {
+        clearBtn.style.display = lowerQuery ? 'block' : 'none';
+    }
+
+    if (!lowerQuery) {
+        // 清空搜索时显示所有
+        items.forEach(item => item.style.display = '');
+        return;
+    }
+
+    items.forEach(item => {
+        const name = item.querySelector('.layer-name')?.textContent?.toLowerCase() || '';
+        const type = item.querySelector('.layer-type')?.textContent?.toLowerCase() || '';
+        const matches = name.includes(lowerQuery) || type.includes(lowerQuery);
+        item.style.display = matches ? '' : 'none';
+    });
+}
+window.filterLayers = filterLayers;
+
+// 清除图层搜索
+function clearLayerSearch() {
+    const input = document.getElementById('layerSearchInput');
+    const clearBtn = document.querySelector('.btn-clear-search');
+
+    if (input) {
+        input.value = '';
+        filterLayers('');
+    }
+    if (clearBtn) {
+        clearBtn.style.display = 'none';
+    }
+}
+window.clearLayerSearch = clearLayerSearch;
+
 
 searchBtn.addEventListener('click', async () => {
     const addr = searchAddressInput.value.trim();
