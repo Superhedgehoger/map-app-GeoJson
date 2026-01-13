@@ -136,6 +136,10 @@ class TimelineManager {
         this.snapshots = new Map();  // snapshotId -> Snapshot
         this.currentSnapshotId = null;
 
+        // 浏览模式状态
+        this.isBrowseMode = false;
+        this.savedEditState = null;  // 进入浏览模式前保存的编辑态
+
         this._loadFromStorage();
         this._renderTimelineUI();
     }
@@ -434,23 +438,38 @@ class TimelineManager {
             .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
         let html = '';
+
+        // 浏览模式下添加提示
+        if (this.isBrowseMode) {
+            html += '<div class="browse-mode-hint">📖 浏览模式：点击快照切换查看</div>';
+        }
+
         sorted.forEach(snapshot => {
             const isCurrent = snapshot.snapshotId === this.currentSnapshotId;
             const date = new Date(snapshot.timestamp);
             const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
 
+            // 计算标记数量
+            let featureCount = 0;
+            if (snapshot.layers && snapshot.layers[0] && snapshot.layers[0].geojson) {
+                featureCount = snapshot.layers[0].geojson.features?.length || 0;
+            }
+
             html += `
-                <div class="timeline-item ${isCurrent ? 'active' : ''}" data-snapshot-id="${snapshot.snapshotId}">
+                <div class="timeline-item ${isCurrent ? 'active' : ''} ${this.isBrowseMode ? 'browse-mode' : ''}" data-snapshot-id="${snapshot.snapshotId}">
                     <div class="timeline-marker">${isCurrent ? '●' : '○'}</div>
-                    <div class="timeline-content" onclick="timelineManager.loadSnapshot('${snapshot.snapshotId}')">
+                    <div class="timeline-content" onclick="timelineManager.onSnapshotClick('${snapshot.snapshotId}')">
                         <div class="timeline-name">${snapshot.name}</div>
-                        <div class="timeline-date">${dateStr}</div>
+                        <div class="timeline-meta">
+                            <span class="timeline-date">${dateStr}</span>
+                            <span class="timeline-count">${featureCount} 个标记</span>
+                        </div>
                     </div>
                     <div class="timeline-actions">
-                        <button onclick="timelineManager.renameSnapshotPrompt('${snapshot.snapshotId}')" title="重命名">
+                        <button onclick="event.stopPropagation(); timelineManager.renameSnapshotPrompt('${snapshot.snapshotId}')" title="重命名">
                             <i class="fa-solid fa-pen"></i>
                         </button>
-                        <button onclick="timelineManager.deleteSnapshot('${snapshot.snapshotId}')" title="删除" class="delete">
+                        <button onclick="event.stopPropagation(); timelineManager.deleteSnapshot('${snapshot.snapshotId}')" title="删除" class="delete">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
@@ -459,6 +478,25 @@ class TimelineManager {
         });
 
         container.innerHTML = html;
+
+        // 浏览模式下更新状态条
+        if (this.isBrowseMode) {
+            this._renderBrowseModeBar();
+        }
+    }
+
+    // 快照点击处理
+    onSnapshotClick(snapshotId) {
+        if (this.isBrowseMode) {
+            // 浏览模式：直接加载
+            this.loadSnapshot(snapshotId);
+        } else {
+            // 编辑模式：提示进入浏览模式
+            if (confirm('要加载此快照吗？\n\n• 点击「确定」进入浏览模式查看\n• 点击「取消」保持当前编辑')) {
+                this.enterBrowseMode();
+                this.loadSnapshot(snapshotId);
+            }
+        }
     }
 
     renameSnapshotPrompt(snapshotId) {
@@ -483,8 +521,201 @@ class TimelineManager {
         return {
             totalSnapshots: this.snapshots.size,
             currentSnapshotId: this.currentSnapshotId,
-            currentSnapshotName: this.getCurrentSnapshotName()
+            currentSnapshotName: this.getCurrentSnapshotName(),
+            isBrowseMode: this.isBrowseMode
         };
+    }
+
+    // === 浏览模式 === //
+
+    // 进入浏览模式
+    enterBrowseMode() {
+        if (this.isBrowseMode) {
+            console.log('Already in browse mode');
+            return;
+        }
+
+        if (this.snapshots.size === 0) {
+            if (typeof showBriefMessage === 'function') {
+                showBriefMessage('⚠️ 暂无快照可浏览');
+            }
+            return;
+        }
+
+        console.log('Entering browse mode...');
+
+        // 保存当前编辑态
+        this.savedEditState = Snapshot.createFromCurrentState('_edit_backup_');
+        console.log('Edit state saved:', this.savedEditState);
+
+        this.isBrowseMode = true;
+
+        // 禁用编辑控件
+        this._disableEditControls();
+
+        // 更新 UI
+        this._renderTimelineUI();
+        this._renderBrowseModeBar();
+
+        if (typeof showBriefMessage === 'function') {
+            showBriefMessage('👁️ 已进入浏览模式，点击快照切换查看');
+        }
+
+        // 如果有当前快照，加载它
+        if (this.currentSnapshotId && this.snapshots.has(this.currentSnapshotId)) {
+            this.loadSnapshot(this.currentSnapshotId);
+        } else {
+            // 加载第一个快照
+            const firstSnapshotId = this.snapshots.keys().next().value;
+            if (firstSnapshotId) {
+                this.loadSnapshot(firstSnapshotId);
+            }
+        }
+    }
+
+    // 退出浏览模式
+    exitBrowseMode() {
+        if (!this.isBrowseMode) {
+            console.log('Not in browse mode');
+            return;
+        }
+
+        console.log('Exiting browse mode...');
+
+        // 恢复编辑态
+        if (this.savedEditState) {
+            console.log('Restoring edit state...');
+            this._resetRuntimeState();
+
+            this.savedEditState.layers.forEach(layerData => {
+                if (layerData.geojson && layerData.geojson.features) {
+                    this._importGeoJSON(layerData.geojson);
+                }
+            });
+
+            if (this.savedEditState.viewState && typeof map !== 'undefined') {
+                map.setView(this.savedEditState.viewState.center, this.savedEditState.viewState.zoom);
+            }
+
+            this._refreshAllViews();
+        }
+
+        this.isBrowseMode = false;
+        this.savedEditState = null;
+
+        // 启用编辑控件
+        this._enableEditControls();
+
+        // 更新 UI
+        this._renderTimelineUI();
+        this._hideBrowseModeBar();
+
+        if (typeof showBriefMessage === 'function') {
+            showBriefMessage('✏️ 已退出浏览模式，返回编辑状态');
+        }
+    }
+
+    // 应用当前浏览的快照到编辑态
+    applyBrowsingSnapshot() {
+        if (!this.isBrowseMode || !this.currentSnapshotId) {
+            return;
+        }
+
+        const snapshot = this.snapshots.get(this.currentSnapshotId);
+        if (!snapshot) return;
+
+        if (confirm(`确定要将快照「${snapshot.name}」应用到当前编辑态吗？\n\n这将覆盖之前的编辑内容！`)) {
+            console.log('Applying browsing snapshot to edit state...');
+
+            // 清空保存的编辑态
+            this.savedEditState = null;
+
+            // 退出浏览模式但保留当前数据
+            this.isBrowseMode = false;
+            this._enableEditControls();
+            this._renderTimelineUI();
+            this._hideBrowseModeBar();
+
+            if (typeof showBriefMessage === 'function') {
+                showBriefMessage(`✅ 已应用快照「${snapshot.name}」`);
+            }
+        }
+    }
+
+    // 渲染浏览模式状态条
+    _renderBrowseModeBar() {
+        let bar = document.getElementById('browseModeBar');
+        if (!bar) {
+            bar = document.createElement('div');
+            bar.id = 'browseModeBar';
+            bar.className = 'browse-mode-bar';
+
+            const section = document.querySelector('.timeline-section');
+            if (section) {
+                const header = section.querySelector('.timeline-header');
+                if (header) {
+                    header.insertAdjacentElement('afterend', bar);
+                }
+            }
+        }
+
+        const currentSnapshot = this.getCurrentSnapshot();
+        const snapshotName = currentSnapshot ? currentSnapshot.name : '未选择';
+
+        bar.innerHTML = `
+            <div class="browse-mode-info">
+                <span class="browse-mode-label">👁️ 浏览模式</span>
+                <span class="browse-mode-snapshot">${snapshotName}</span>
+            </div>
+            <div class="browse-mode-actions">
+                <button onclick="timelineManager.applyBrowsingSnapshot()" title="应用到编辑态">
+                    <i class="fa-solid fa-check"></i> 应用
+                </button>
+                <button onclick="timelineManager.exitBrowseMode()" class="exit" title="退出浏览模式">
+                    <i class="fa-solid fa-xmark"></i> 退出
+                </button>
+            </div>
+        `;
+        bar.style.display = 'flex';
+    }
+
+    _hideBrowseModeBar() {
+        const bar = document.getElementById('browseModeBar');
+        if (bar) {
+            bar.style.display = 'none';
+        }
+    }
+
+    _disableEditControls() {
+        // 禁用绘制控制
+        const drawControl = document.querySelector('.leaflet-draw');
+        if (drawControl) {
+            drawControl.style.opacity = '0.3';
+            drawControl.style.pointerEvents = 'none';
+        }
+
+        // 禁用导入/清空按钮
+        const clearBtn = document.getElementById('clearAllBtn');
+        if (clearBtn) clearBtn.disabled = true;
+
+        const importBtn = document.querySelector('.import-btn, #importGeoJSONBtn');
+        if (importBtn) importBtn.disabled = true;
+    }
+
+    _enableEditControls() {
+        // 启用绘制控制
+        const drawControl = document.querySelector('.leaflet-draw');
+        if (drawControl) {
+            drawControl.style.opacity = '1';
+            drawControl.style.pointerEvents = 'auto';
+        }
+
+        // 启用按钮
+        const clearBtn = document.getElementById('clearAllBtn');
+        if (clearBtn) clearBtn.disabled = false;
+
+        const importBtn = document.querySelector('.import-btn, #importGeoJSONBtn');
+        if (importBtn) importBtn.disabled = false;
     }
 }
 
