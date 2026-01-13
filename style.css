@@ -537,22 +537,37 @@ body {
     cursor: pointer;
 }
 
-/* ==== 地图控件重定位到右下角 ==== */
+/* ==== 地图缩放控件（垂直排列 + 大点击区域） ==== */
 .leaflet-control-zoom {
     border: none !important;
     box-shadow: var(--shadow-float) !important;
+    border-radius: var(--radius-md) !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
 .leaflet-control-zoom a {
+    display: block !important;
+    position: relative !important;
     background: var(--bg-glass) !important;
     backdrop-filter: blur(16px) !important;
     -webkit-backdrop-filter: blur(16px) !important;
-    border: 1px solid var(--border-glass) !important;
+    border: none !important;
+    border-bottom: 1px solid var(--border-glass) !important;
     color: var(--text-primary) !important;
-    width: 36px !important;
-    height: 36px !important;
-    line-height: 36px !important;
-    font-size: 18px !important;
+    width: 44px !important;
+    height: 44px !important;
+    line-height: 44px !important;
+    font-size: 20px !important;
+    text-align: center !important;
+    text-decoration: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.leaflet-control-zoom a:last-child {
+    border-bottom: none !important;
 }
 
 .leaflet-control-zoom a:hover {
@@ -561,11 +576,11 @@ body {
 }
 
 .leaflet-control-zoom-in {
-    border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+    border-radius: 0 !important;
 }
 
 .leaflet-control-zoom-out {
-    border-radius: 0 0 var(--radius-md) var(--radius-md) !important;
+    border-radius: 0 !important;
 }
 
 /* 隐藏分隔线 */
