@@ -126,6 +126,23 @@ function getTableColumns() {
             width: 90,
             visible: false,  // 默认隐藏
         },
+        // 定位按钮列
+        {
+            title: "操作",
+            field: "_actions",
+            width: 80,
+            frozen: true,
+            hozAlign: "center",
+            headerSort: false,
+            formatter: function (cell, formatterParams, onRendered) {
+                return '<button class="table-locate-btn" title="定位到地图"><i class="fa-solid fa-location-crosshairs"></i></button>';
+            },
+            cellClick: function (e, cell) {
+                e.stopPropagation();  // 阻止冒泡到行点击
+                const rowData = cell.getRow().getData();
+                locateMarkerOnMap(rowData._layer);
+            }
+        },
     ];
 }
 
@@ -244,7 +261,7 @@ function updateFeatureTable() {
     console.log(`Table updated with ${data.length} rows and ${columns.length} columns`);
 }
 
-// 表格行点击事件
+// 表格行点击事件（只做选中，不做定位）
 function onTableRowClick(e, row) {
     const data = row.getData();
     const layer = data._layer;
@@ -259,23 +276,33 @@ function onTableRowClick(e, row) {
         selectionManager.select(layer);
     }
 
+    console.log('Table row selected:', data.name);
+}
+
+// 定位标记到地图（由定位按钮触发）
+function locateMarkerOnMap(layer) {
+    if (!layer) {
+        console.warn('Layer not found for locate');
+        return;
+    }
+
     // 如果标记属于某个组，先展开该组
     if (typeof markerGroupManager !== 'undefined' && markerGroupManager) {
         markerGroupManager.expandGroupForMarker(layer);
     }
 
-    // 地图飞行定位到该标记（更流畅的动画）
+    // 地图定位到该标记
     const latlng = layer.getLatLng();
     if (typeof map !== 'undefined') {
         map.flyTo(latlng, Math.max(map.getZoom(), 16), {
             animate: true,
-            duration: 0.8
+            duration: 0.5
         });
     }
 
-    // 更新 SelectionManager
+    // 使用 SelectionManager 统一管理选中状态
     if (typeof selectionManager !== 'undefined') {
-        selectionManager.select(layer, 'table');
+        selectionManager.select(layer);
     }
 
     // 高亮标记
@@ -283,13 +310,18 @@ function onTableRowClick(e, row) {
         highlightMarker(layer);
     }
 
-    // 打开属性编辑器
-    if (typeof openPropertyDrawer === 'function') {
-        openPropertyDrawer(layer);
+    // 获取名称显示提示
+    const props = layer.feature?.properties || {};
+    const name = props.名称 || props.name || '标记';
+    if (typeof showBriefMessage === 'function') {
+        showBriefMessage(`📍 已定位到: ${name}`);
     }
 
-    console.log('Table row clicked, flyTo:', data.name);
+    console.log('Marker located on map:', name);
 }
+
+// 全局暴露
+window.locateMarkerOnMap = locateMarkerOnMap;
 
 // 单元格编辑回写
 function onCellEdited(cell) {

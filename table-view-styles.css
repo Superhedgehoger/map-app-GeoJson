@@ -167,3 +167,59 @@
 body:has(.table-view-panel.open) .floating-btn {
     bottom: 420px;
 }
+
+/* ==== Table Locate Button ==== */
+.table-locate-btn {
+    background: linear-gradient(135deg, #4a90e2, #357abd);
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.table-locate-btn:hover {
+    background: linear-gradient(135deg, #357abd, #2968a3);
+    transform: scale(1.1);
+}
+
+.table-locate-btn i {
+    font-size: 0.8rem;
+}
+
+/* ==== Table Scrollbars ==== */
+.table-view-panel #featureTable {
+    overflow: auto !important;
+}
+
+.tabulator {
+    overflow: auto !important;
+}
+
+.tabulator-tableHolder {
+    overflow: auto !important;
+}
+
+/* Custom scrollbar styling */
+.tabulator-tableHolder::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.tabulator-tableHolder::-webkit-scrollbar-track {
+    background: #2a2a2a;
+}
+
+.tabulator-tableHolder::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 5px;
+}
+
+.tabulator-tableHolder::-webkit-scrollbar-thumb:hover {
+    background: #777;
+}
