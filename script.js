@@ -1091,85 +1091,170 @@ function closeImportModal() {
 }
 
 function confirmImport() {
-    if (!pendingImportData) return;
+    console.log('confirmImport called');
 
-    const mode = document.querySelector('input[name="importMode"]:checked')?.value || 'replace';
-
-    if (mode === 'replace') {
-        // ⚠️ 真正的替换模式：彻底清空所有状态后再导入
-        resetImportState();
+    // 1. 读取待导入数据
+    if (!pendingImportData) {
+        console.warn('No pending import data');
+        alert('没有待导入的数据，请先选择文件');
+        return;
     }
 
-    importGeoJSON(pendingImportData);
+    // 2. 读取导入模式
+    const mode = document.querySelector('input[name="importMode"]:checked')?.value || 'replace';
+    console.log('Import mode:', mode);
 
-    // 刷新所有视图
-    refreshAllViewsAfterImport();
+    try {
+        // 3. 替换模式：先清空旧状态
+        if (mode === 'replace') {
+            console.log('Replace mode: clearing old state...');
+            resetImportStateSafe();
+        }
 
-    closeImportModal();
+        // 4. 执行导入
+        console.log('Importing GeoJSON...');
+        importGeoJSON(pendingImportData);
 
-    if (typeof showBriefMessage === 'function') {
-        showBriefMessage(mode === 'replace' ? '✅ 已替换现有图层' : '✅ 已合并图层');
+        // 5. 刷新所有视图
+        refreshAllViewsAfterImport();
+
+        // 6. 关闭弹窗
+        closeImportModal();
+
+        // 7. 显示成功提示
+        if (typeof showBriefMessage === 'function') {
+            showBriefMessage(mode === 'replace' ? '✅ 已替换现有图层' : '✅ 已合并图层');
+        }
+
+        console.log('Import completed successfully');
+    } catch (err) {
+        console.error('Import failed:', err);
+        alert('导入失败：' + err.message);
     }
 }
 
-// 导入前彻底清空所有状态（替换模式专用）
+// 安全版本的状态重置（替换模式专用）
+function resetImportStateSafe() {
+    console.log('resetImportStateSafe: Starting...');
+
+    try {
+        // 1. 清空 MarkerGroupManager
+        if (typeof markerGroupManager !== 'undefined' && markerGroupManager) {
+            console.log('Clearing MarkerGroupManager...');
+            if (typeof markerGroupManager.clear === 'function') {
+                markerGroupManager.clear();
+            }
+            if (markerGroupManager.coordIndex && typeof markerGroupManager.coordIndex.clear === 'function') {
+                markerGroupManager.coordIndex.clear();
+            }
+            if (markerGroupManager.markerToGroup && typeof markerGroupManager.markerToGroup.clear === 'function') {
+                markerGroupManager.markerToGroup.clear();
+            }
+            // 重置 groups Map
+            if (markerGroupManager.groups && typeof markerGroupManager.groups.clear === 'function') {
+                markerGroupManager.groups.clear();
+            }
+        }
+    } catch (e) {
+        console.warn('Error clearing MarkerGroupManager:', e);
+    }
+
+    try {
+        // 2. 清空 drawnItems
+        if (typeof drawnItems !== 'undefined' && drawnItems) {
+            console.log('Clearing drawnItems...');
+            drawnItems.clearLayers();
+        }
+    } catch (e) {
+        console.warn('Error clearing drawnItems:', e);
+    }
+
+    try {
+        // 3. 清空自定义组
+        if (typeof customGroupManager !== 'undefined' && customGroupManager) {
+            console.log('Clearing customGroupManager...');
+            if (customGroupManager.groups && typeof customGroupManager.groups.clear === 'function') {
+                customGroupManager.groups.clear();
+            }
+            if (customGroupManager.markerToGroups && typeof customGroupManager.markerToGroups.clear === 'function') {
+                customGroupManager.markerToGroups.clear();
+            }
+            if (typeof customGroupManager._renderGroupList === 'function') {
+                customGroupManager._renderGroupList();
+            }
+        }
+    } catch (e) {
+        console.warn('Error clearing customGroupManager:', e);
+    }
+
+    try {
+        // 4. 清空 SelectionManager 状态
+        if (typeof selectionManager !== 'undefined' && selectionManager) {
+            console.log('Clearing selectionManager...');
+            if (typeof selectionManager.clear === 'function') {
+                selectionManager.clear();
+            } else if (typeof selectionManager.deselect === 'function') {
+                selectionManager.deselect();
+            }
+        }
+    } catch (e) {
+        console.warn('Error clearing selectionManager:', e);
+    }
+
+    try {
+        // 5. 清空表格数据
+        if (typeof featureTable !== 'undefined' && featureTable) {
+            console.log('Clearing featureTable...');
+            if (typeof featureTable.clearData === 'function') {
+                featureTable.clearData();
+            } else if (typeof featureTable.setData === 'function') {
+                featureTable.setData([]);
+            }
+        }
+    } catch (e) {
+        console.warn('Error clearing featureTable:', e);
+    }
+
+    console.log('resetImportStateSafe: Complete');
+}
+
+// 保留原函数名兼容
 function resetImportState() {
-    console.log('Resetting state for import replace mode...');
-
-    // 1. 清空 MarkerGroupManager（必须在 drawnItems 之前）
-    if (typeof markerGroupManager !== 'undefined' && markerGroupManager) {
-        markerGroupManager.clear();
-        if (markerGroupManager.coordIndex) {
-            markerGroupManager.coordIndex.clear();
-        }
-        if (markerGroupManager.markerToGroup) {
-            markerGroupManager.markerToGroup.clear();
-        }
-    }
-
-    // 2. 清空 drawnItems
-    if (typeof drawnItems !== 'undefined') {
-        drawnItems.clearLayers();
-    }
-
-    // 3. 清空自定义组
-    if (typeof customGroupManager !== 'undefined' && customGroupManager) {
-        customGroupManager.groups.clear();
-        customGroupManager.markerToGroups.clear();
-        customGroupManager._renderGroupList();
-    }
-
-    // 4. 清空 SelectionManager 状态
-    if (typeof selectionManager !== 'undefined' && selectionManager) {
-        selectionManager.clear();
-    }
-
-    // 5. 清空表格数据
-    if (typeof featureTable !== 'undefined' && featureTable) {
-        featureTable.clearData();
-    }
-
-    console.log('Import state reset complete');
+    resetImportStateSafe();
 }
 
 // 导入后刷新所有视图
 function refreshAllViewsAfterImport() {
     setTimeout(() => {
-        if (typeof updateLayerList === 'function') {
-            updateLayerList();
-        }
-        if (typeof updateFeatureTable === 'function') {
-            updateFeatureTable();
-        }
-        if (typeof updateDashboard === 'function') {
-            updateDashboard();
-        }
-        if (typeof updateLayerStats === 'function') {
-            updateLayerStats();
-        }
-        if (typeof updateLayerDetailsPanel === 'function') {
-            updateLayerDetailsPanel();
-        }
+        try {
+            if (typeof updateLayerList === 'function') {
+                updateLayerList();
+            }
+        } catch (e) { console.warn('updateLayerList error:', e); }
+
+        try {
+            if (typeof updateFeatureTable === 'function') {
+                updateFeatureTable();
+            }
+        } catch (e) { console.warn('updateFeatureTable error:', e); }
+
+        try {
+            if (typeof updateDashboard === 'function') {
+                updateDashboard();
+            }
+        } catch (e) { console.warn('updateDashboard error:', e); }
+
+        try {
+            if (typeof updateLayerStats === 'function') {
+                updateLayerStats();
+            }
+        } catch (e) { console.warn('updateLayerStats error:', e); }
+
+        try {
+            if (typeof updateLayerDetailsPanel === 'function') {
+                updateLayerDetailsPanel();
+            }
+        } catch (e) { console.warn('updateLayerDetailsPanel error:', e); }
     }, 100);
 }
 
@@ -1177,6 +1262,7 @@ function refreshAllViewsAfterImport() {
 window.confirmImport = confirmImport;
 window.closeImportModal = closeImportModal;
 window.resetImportState = resetImportState;
+window.resetImportStateSafe = resetImportStateSafe;
 window.refreshAllViewsAfterImport = refreshAllViewsAfterImport;
 
 // ==== Share Feature ==== //
