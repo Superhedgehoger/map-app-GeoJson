@@ -310,411 +310,412 @@
                 </div>
             </div>
         </div>
+    </div>
+    <!-- 关闭 layer-panel-content 和 layerPanel -->
+    </div>
 
+    <!--地图容器 -->
+    <div id="map"></div>
 
-        <!-- 战略事件追踪器面板 -->
-        <div id="eventTrackerPanel" class="panel" style="display:none;">
-            <div class="panel-header">
-                <h2>战略事件追踪器</h2>
-                <button id="closeEventTrackerBtn" onclick="closeEventTracker()">关闭</button>
+    <!-- 战略事件追踪器面板 -->
+    <div id="eventTrackerPanel" class="panel" style="display:none;">
+        <div class="panel-header">
+            <h2>战略事件追踪器</h2>
+            <button id="closeEventTrackerBtn" onclick="closeEventTracker()">关闭</button>
+        </div>
+
+        <p id="eventTrackerFeatureName" style="font-weight:600; margin-bottom:10px; color:#4a90e2;"></p>
+
+        <!-- 事件列表视图 -->
+        <div id="eventListView">
+            <div id="eventListContainer"></div>
+            <button class="btn-add-event" onclick="createNewEvent()">+ 新增事件</button>
+        </div>
+
+        <!-- 事件编辑视图 -->
+        <div id="eventEditView" style="display:none;">
+            <div class="edit-view-header">
+                <button class="btn-back" onclick="showEventList()">◀ 返回列表</button>
+                <input type="text" id="currentEventName" placeholder="事件名称" />
             </div>
 
-            <p id="eventTrackerFeatureName" style="font-weight:600; margin-bottom:10px; color:#4a90e2;"></p>
-
-            <!-- 事件列表视图 -->
-            <div id="eventListView">
-                <div id="eventListContainer"></div>
-                <button class="btn-add-event" onclick="createNewEvent()">+ 新增事件</button>
-            </div>
-
-            <!-- 事件编辑视图 -->
-            <div id="eventEditView" style="display:none;">
-                <div class="edit-view-header">
-                    <button class="btn-back" onclick="showEventList()">◀ 返回列表</button>
-                    <input type="text" id="currentEventName" placeholder="事件名称" />
+            <div id="eventTrackerContent" class="scrollable-content">
+                <!-- Todo List Section -->
+                <div class="tracker-section">
+                    <h3>任务清单</h3>
+                    <div class="todo-input-group">
+                        <input type="text" id="newTodoInput" placeholder="添加新任务..." />
+                        <button id="addTodoBtn" onclick="addTodoItemClick()">+</button>
+                    </div>
+                    <div id="todoList"></div>
                 </div>
 
-                <div id="eventTrackerContent" class="scrollable-content">
-                    <!-- Todo List Section -->
-                    <div class="tracker-section">
-                        <h3>任务清单</h3>
-                        <div class="todo-input-group">
-                            <input type="text" id="newTodoInput" placeholder="添加新任务..." />
-                            <button id="addTodoBtn" onclick="addTodoItemClick()">+</button>
+                <!-- Notes Section -->
+                <div class="tracker-section">
+                    <h3>备注说明</h3>
+                    <textarea id="eventNotes" placeholder="输入文本描述..." rows="4"></textarea>
+                </div>
+
+                <!-- URL Links Section -->
+                <div class="tracker-section">
+                    <h3>相关链接</h3>
+                    <div class="url-input-group">
+                        <input type="text" id="urlTitle" placeholder="链接标题" />
+                        <input type="url" id="urlAddress" placeholder="URL地址" />
+                        <button id="addUrlBtn" onclick="addUrlItemClick()">+</button>
+                    </div>
+                    <div id="urlList"></div>
+                </div>
+
+                <!-- Timeline Section -->
+                <div class="tracker-section">
+                    <h3>时间轴</h3>
+                    <div class="timeline-input-group">
+                        <input type="datetime-local" id="timelineDate" step="60" />
+                        <input type="text" id="timelineTitle" placeholder="事件标题" />
+                        <button id="addTimelineBtn" onclick="addTimelineEventClick()">+</button>
+                    </div>
+                    <div id="timelineDisplay"></div>
+                </div>
+
+                <!-- Attachments Section -->
+                <div class="tracker-section">
+                    <h3>📎 附件</h3>
+                    <div class="attachment-upload">
+                        <input type="file" id="attachmentInput" onchange="uploadAttachment()" />
+                        <label for="attachmentInput" class="upload-btn">选择文件</label>
+                        <span class="upload-hint">支持图片、PDF等 (最大500KB)</span>
+                    </div>
+                    <div id="attachmentList" class="attachment-list"></div>
+                </div>
+            </div>
+
+
+            <!-- Save Button -->
+            <button id="saveEventDataBtn" onclick="saveCurrentEvent()">保存事件</button>
+        </div>
+    </div>
+
+    <!-- 右键菜单 -->
+    <div id="contextMenu" class="context-menu" style="display:none;">
+        <div class="context-menu-item" onclick="openEventTrackerFromMenu()">📋 事件追踪器</div>
+        <div class="context-menu-item" onclick="openPropertyEditor()">📝 属性编辑器</div>
+        <div class="context-menu-item" onclick="openIconPicker()">🎨 更改图标</div>
+        <div class="context-menu-item" onclick="deleteSelectedMarker()">删除标记</div>
+    </div>
+
+    <!-- 图标选择器弹窗 -->
+    <div id="iconPickerModal" class="modal-overlay" style="display:none;">
+        <div class="icon-picker-modal">
+            <div class="modal-header">
+                <h3>选择标记图标</h3>
+                <button class="btn-close-modal" onclick="closeIconPicker()">×</button>
+            </div>
+
+            <!-- 预览区 -->
+            <div class="icon-preview-section">
+                <div id="iconPreview" class="icon-preview">
+                    <div class="custom-marker-wrapper">
+                        <div class="custom-marker-circle" id="previewCircle" style="background-color:#4a90e2;">
+                            <i class="fa-solid fa-location-dot" id="previewIcon"></i>
                         </div>
-                        <div id="todoList"></div>
-                    </div>
-
-                    <!-- Notes Section -->
-                    <div class="tracker-section">
-                        <h3>备注说明</h3>
-                        <textarea id="eventNotes" placeholder="输入文本描述..." rows="4"></textarea>
-                    </div>
-
-                    <!-- URL Links Section -->
-                    <div class="tracker-section">
-                        <h3>相关链接</h3>
-                        <div class="url-input-group">
-                            <input type="text" id="urlTitle" placeholder="链接标题" />
-                            <input type="url" id="urlAddress" placeholder="URL地址" />
-                            <button id="addUrlBtn" onclick="addUrlItemClick()">+</button>
-                        </div>
-                        <div id="urlList"></div>
-                    </div>
-
-                    <!-- Timeline Section -->
-                    <div class="tracker-section">
-                        <h3>时间轴</h3>
-                        <div class="timeline-input-group">
-                            <input type="datetime-local" id="timelineDate" step="60" />
-                            <input type="text" id="timelineTitle" placeholder="事件标题" />
-                            <button id="addTimelineBtn" onclick="addTimelineEventClick()">+</button>
-                        </div>
-                        <div id="timelineDisplay"></div>
-                    </div>
-
-                    <!-- Attachments Section -->
-                    <div class="tracker-section">
-                        <h3>📎 附件</h3>
-                        <div class="attachment-upload">
-                            <input type="file" id="attachmentInput" onchange="uploadAttachment()" />
-                            <label for="attachmentInput" class="upload-btn">选择文件</label>
-                            <span class="upload-hint">支持图片、PDF等 (最大500KB)</span>
-                        </div>
-                        <div id="attachmentList" class="attachment-list"></div>
+                        <div class="custom-marker-tip" id="previewTip" style="border-top-color:#4a90e2;"></div>
                     </div>
                 </div>
-
-
-                <!-- Save Button -->
-                <button id="saveEventDataBtn" onclick="saveCurrentEvent()">保存事件</button>
-            </div>
-        </div>
-
-
-        <!--地图容器 -->
-        <div id="map"></div>
-
-        <!-- 右键菜单 -->
-        <div id="contextMenu" class="context-menu" style="display:none;">
-            <div class="context-menu-item" onclick="openEventTrackerFromMenu()">📋 事件追踪器</div>
-            <div class="context-menu-item" onclick="openPropertyEditor()">📝 属性编辑器</div>
-            <div class="context-menu-item" onclick="openIconPicker()">🎨 更改图标</div>
-            <div class="context-menu-item" onclick="deleteSelectedMarker()">删除标记</div>
-        </div>
-
-        <!-- 图标选择器弹窗 -->
-        <div id="iconPickerModal" class="modal-overlay" style="display:none;">
-            <div class="icon-picker-modal">
-                <div class="modal-header">
-                    <h3>选择标记图标</h3>
-                    <button class="btn-close-modal" onclick="closeIconPicker()">×</button>
-                </div>
-
-                <!-- 预览区 -->
-                <div class="icon-preview-section">
-                    <div id="iconPreview" class="icon-preview">
-                        <div class="custom-marker-wrapper">
-                            <div class="custom-marker-circle" id="previewCircle" style="background-color:#4a90e2;">
-                                <i class="fa-solid fa-location-dot" id="previewIcon"></i>
-                            </div>
-                            <div class="custom-marker-tip" id="previewTip" style="border-top-color:#4a90e2;"></div>
-                        </div>
-                    </div>
-                    <span id="selectedIconLabel">定位点</span>
-                </div>
-
-                <!-- 颜色选择 -->
-                <div class="picker-section">
-                    <label>选择颜色</label>
-                    <div id="colorPalette" class="color-palette"></div>
-                </div>
-
-                <!-- 图标选择 -->
-                <div class="picker-section">
-                    <label>选择图标</label>
-                    <div id="iconGrid" class="icon-grid"></div>
-                </div>
-
-                <!-- 操作按钮 -->
-                <div class="modal-actions">
-                    <button class="btn-cancel" onclick="closeIconPicker()">取消</button>
-                    <button class="btn-apply" onclick="applyIconSelection()">应用</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 分享弹窗 -->
-        <div id="shareModal" class="modal-overlay" style="display:none;">
-            <div class="share-modal">
-                <div class="modal-header">
-                    <h3><i class="fa-solid fa-share-nodes"></i> 分享地图</h3>
-                    <button class="btn-close-modal" onclick="closeShareModal()">×</button>
-                </div>
-
-                <!-- 预览区 -->
-                <div class="share-preview-section">
-                    <div id="sharePreviewLoading" class="share-loading">
-                        <i class="fa-solid fa-spinner fa-spin"></i> 正在生成截图...
-                    </div>
-                    <img id="sharePreviewImage" class="share-preview-image" style="display:none;" />
-                </div>
-
-                <!-- 分享选项 -->
-                <div class="share-options">
-                    <button class="share-option-btn" onclick="downloadMapImage()">
-                        <i class="fa-solid fa-download"></i>
-                        <span>下载图片</span>
-                    </button>
-                    <button class="share-option-btn" onclick="copyMapImage()">
-                        <i class="fa-solid fa-copy"></i>
-                        <span>复制图片</span>
-                    </button>
-                    <button class="share-option-btn" onclick="copyShareLink()">
-                        <i class="fa-solid fa-link"></i>
-                        <span>复制链接</span>
-                    </button>
-                </div>
-
-                <!-- 状态提示 -->
-                <div id="shareStatus" class="share-status" style="display:none;"></div>
-            </div>
-        </div>
-
-        <!-- GeoJSON 导入确认弹窗 -->
-        <div id="importModal" class="modal-overlay" style="display:none;">
-            <div class="import-modal">
-                <div class="modal-header">
-                    <h3>导入 GeoJSON</h3>
-                    <button class="btn-close-modal" onclick="closeImportModal()">×</button>
-                </div>
-
-                <!-- 统计信息 -->
-                <div class="import-stats">
-                    <h4>几何类型统计</h4>
-                    <div id="importStats" class="stats-grid"></div>
-                </div>
-
-                <!-- 导入模式选择 -->
-                <div class="import-mode-section">
-                    <label>导入模式</label>
-                    <div class="import-mode-options">
-                        <label class="radio-option">
-                            <input type="radio" name="importMode" value="replace" checked>
-                            <span class="radio-label">替换现有图层</span>
-                            <small>清除当前所有图层，导入新数据</small>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="importMode" value="merge">
-                            <span class="radio-label">合并到现有图层</span>
-                            <small>保留当前图层，追加新数据</small>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- 操作按钮 -->
-                <div class="modal-actions">
-                    <button class="btn-cancel" onclick="closeImportModal()">取消</button>
-                    <button class="btn-apply" onclick="confirmImport()">确认导入</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- GeoJSON 代码编辑器（默认隐藏） -->
-        <div id="editorPanel" style="display:none;">
-            <h2>GeoJSON 编辑器</h2>
-
-            <!-- Code Archive Management -->
-            <div class="archive-section" style="margin-bottom:10px;">
-                <div class="archive-create">
-                    <input type="text" id="newCodeArchiveName" placeholder="输入代码存档名称..." />
-                    <button onclick="createCodeArchive()">新建</button>
-                </div>
-                <div id="codeArchiveList" class="archive-list" style="max-height:120px;"></div>
-                <div id="currentCodeArchiveInfo" class="current-archive" style="display:none;">
-                    <span>当前: <strong id="currentCodeArchiveName"></strong></span>
-                    <button onclick="saveCurrentCodeArchive()">保存</button>
-                </div>
+                <span id="selectedIconLabel">定位点</span>
             </div>
 
+            <!-- 颜色选择 -->
+            <div class="picker-section">
+                <label>选择颜色</label>
+                <div id="colorPalette" class="color-palette"></div>
+            </div>
 
-            <textarea id="geojsonEditor" spellcheck="false"></textarea>
+            <!-- 图标选择 -->
+            <div class="picker-section">
+                <label>选择图标</label>
+                <div id="iconGrid" class="icon-grid"></div>
+            </div>
 
-            <div style="display:flex; gap:10px;">
-                <button id="applyEditorBtn" style="flex:1;">应用到地图</button>
-                <button
-                    onclick="document.getElementById('editorPanel').style.display='none'; document.getElementById('toggleEditorBtn').textContent='显示代码编辑器'"
-                    style="flex:1; background:#e74c3c;">关闭</button>
+            <!-- 操作按钮 -->
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeIconPicker()">取消</button>
+                <button class="btn-apply" onclick="applyIconSelection()">应用</button>
             </div>
         </div>
+    </div>
 
+    <!-- 分享弹窗 -->
+    <div id="shareModal" class="modal-overlay" style="display:none;">
+        <div class="share-modal">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-share-nodes"></i> 分享地图</h3>
+                <button class="btn-close-modal" onclick="closeShareModal()">×</button>
+            </div>
 
-        <!-- 表格视图面板 -->
-        <div id="tableViewPanel" class="table-view-panel">
-            <div class="table-drag-handle" id="tableDragHandle"></div>
-            <div class="table-header">
-                <h3><i class="fa-solid fa-table"></i> 数据表格</h3>
-                <div class="table-controls">
-                    <button id="refreshTableBtn" class="btn-table-control" title="刷新表格">
-                        <i class="fa-solid fa-rotate"></i>
-                    </button>
-                    <button id="closeTableBtn" class="btn-table-control" title="关闭表格">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
+            <!-- 预览区 -->
+            <div class="share-preview-section">
+                <div id="sharePreviewLoading" class="share-loading">
+                    <i class="fa-solid fa-spinner fa-spin"></i> 正在生成截图...
                 </div>
+                <img id="sharePreviewImage" class="share-preview-image" style="display:none;" />
             </div>
-            <div id="featureTable"></div>
-        </div>
 
-        <!-- 统一工具入口（右下角） -->
-        <div class="tools-fab-container">
-            <button id="toolsFabBtn" class="tools-fab" title="工具面板" onclick="toggleToolsMenu()">
-                <i class="fa-solid fa-toolbox"></i>
-            </button>
-            <div id="toolsMenu" class="tools-menu">
-                <button class="tools-menu-item" onclick="toggleTableView(); closeToolsMenu()" title="数据表格">
-                    <i class="fa-solid fa-table"></i>
-                    <span>表格</span>
+            <!-- 分享选项 -->
+            <div class="share-options">
+                <button class="share-option-btn" onclick="downloadMapImage()">
+                    <i class="fa-solid fa-download"></i>
+                    <span>下载图片</span>
                 </button>
-                <button class="tools-menu-item" onclick="dashboardPanel && dashboardPanel.open(); closeToolsMenu()"
-                    title="数据看板">
-                    <i class="fa-solid fa-chart-pie"></i>
-                    <span>看板</span>
+                <button class="share-option-btn" onclick="copyMapImage()">
+                    <i class="fa-solid fa-copy"></i>
+                    <span>复制图片</span>
+                </button>
+                <button class="share-option-btn" onclick="copyShareLink()">
+                    <i class="fa-solid fa-link"></i>
+                    <span>复制链接</span>
                 </button>
             </div>
+
+            <!-- 状态提示 -->
+            <div id="shareStatus" class="share-status" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- GeoJSON 导入确认弹窗 -->
+    <div id="importModal" class="modal-overlay" style="display:none;">
+        <div class="import-modal">
+            <div class="modal-header">
+                <h3>导入 GeoJSON</h3>
+                <button class="btn-close-modal" onclick="closeImportModal()">×</button>
+            </div>
+
+            <!-- 统计信息 -->
+            <div class="import-stats">
+                <h4>几何类型统计</h4>
+                <div id="importStats" class="stats-grid"></div>
+            </div>
+
+            <!-- 导入模式选择 -->
+            <div class="import-mode-section">
+                <label>导入模式</label>
+                <div class="import-mode-options">
+                    <label class="radio-option">
+                        <input type="radio" name="importMode" value="replace" checked>
+                        <span class="radio-label">替换现有图层</span>
+                        <small>清除当前所有图层，导入新数据</small>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="importMode" value="merge">
+                        <span class="radio-label">合并到现有图层</span>
+                        <small>保留当前图层，追加新数据</small>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeImportModal()">取消</button>
+                <button class="btn-apply" onclick="confirmImport()">确认导入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GeoJSON 代码编辑器（默认隐藏） -->
+    <div id="editorPanel" style="display:none;">
+        <h2>GeoJSON 编辑器</h2>
+
+        <!-- Code Archive Management -->
+        <div class="archive-section" style="margin-bottom:10px;">
+            <div class="archive-create">
+                <input type="text" id="newCodeArchiveName" placeholder="输入代码存档名称..." />
+                <button onclick="createCodeArchive()">新建</button>
+            </div>
+            <div id="codeArchiveList" class="archive-list" style="max-height:120px;"></div>
+            <div id="currentCodeArchiveInfo" class="current-archive" style="display:none;">
+                <span>当前: <strong id="currentCodeArchiveName"></strong></span>
+                <button onclick="saveCurrentCodeArchive()">保存</button>
+            </div>
         </div>
 
-        <!-- 看板面板（右上角） -->
-        <div id="dashboardPanel" class="dashboard-panel">
-            <div class="dashboard-header">
-                <h3><i class="fa-solid fa-chart-pie"></i> 数据看板</h3>
-                <button id="closeDashboardBtn" class="btn-close-dashboard" title="关闭">
+
+        <textarea id="geojsonEditor" spellcheck="false"></textarea>
+
+        <div style="display:flex; gap:10px;">
+            <button id="applyEditorBtn" style="flex:1;">应用到地图</button>
+            <button
+                onclick="document.getElementById('editorPanel').style.display='none'; document.getElementById('toggleEditorBtn').textContent='显示代码编辑器'"
+                style="flex:1; background:#e74c3c;">关闭</button>
+        </div>
+    </div>
+
+
+    <!-- 表格视图面板 -->
+    <div id="tableViewPanel" class="table-view-panel">
+        <div class="table-drag-handle" id="tableDragHandle"></div>
+        <div class="table-header">
+            <h3><i class="fa-solid fa-table"></i> 数据表格</h3>
+            <div class="table-controls">
+                <button id="refreshTableBtn" class="btn-table-control" title="刷新表格">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+                <button id="closeTableBtn" class="btn-table-control" title="关闭表格">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <div id="dashboardContent" class="dashboard-content">
-                <div class="dashboard-empty">暂无数据</div>
+        </div>
+        <div id="featureTable"></div>
+    </div>
+
+    <!-- 统一工具入口（右下角） -->
+    <div class="tools-fab-container">
+        <button id="toolsFabBtn" class="tools-fab" title="工具面板" onclick="toggleToolsMenu()">
+            <i class="fa-solid fa-toolbox"></i>
+        </button>
+        <div id="toolsMenu" class="tools-menu">
+            <button class="tools-menu-item" onclick="toggleTableView(); closeToolsMenu()" title="数据表格">
+                <i class="fa-solid fa-table"></i>
+                <span>表格</span>
+            </button>
+            <button class="tools-menu-item" onclick="dashboardPanel && dashboardPanel.open(); closeToolsMenu()"
+                title="数据看板">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>看板</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 看板面板（右上角） -->
+    <div id="dashboardPanel" class="dashboard-panel">
+        <div class="dashboard-header">
+            <h3><i class="fa-solid fa-chart-pie"></i> 数据看板</h3>
+            <button id="closeDashboardBtn" class="btn-close-dashboard" title="关闭">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div id="dashboardContent" class="dashboard-content">
+            <div class="dashboard-empty">暂无数据</div>
+        </div>
+    </div>
+
+    <!-- 属性编辑器侧边抽屉 -->
+    <div id="propertyDrawer" class="property-drawer" style="display:none;">
+        <div class="drawer-overlay" onclick="closePropertyDrawer()"></div>
+        <div class="drawer-content">
+            <div class="drawer-header">
+                <h2>📝 标记属性</h2>
+                <button class="btn-close-drawer" onclick="closePropertyDrawer()">×</button>
+            </div>
+
+            <div class="drawer-body">
+                <!-- 基础信息 -->
+                <div class="property-section">
+                    <h3>基础信息</h3>
+                    <div class="form-group">
+                        <label>名称 *</label>
+                        <input type="text" id="propName" placeholder="标记名称" />
+                    </div>
+                    <div class="form-group">
+                        <label>类型</label>
+                        <input type="text" id="propType" placeholder="标记类型" />
+                    </div>
+                    <div class="form-group">
+                        <label>地址</label>
+                        <input type="text" id="propAddress" placeholder="详细地址" />
+                    </div>
+                </div>
+
+                <!-- 坐标信息 -->
+                <div class="property-section">
+                    <h3>坐标信息</h3>
+                    <div class="coord-display">
+                        <div class="coord-item">
+                            <label>经度</label>
+                            <span id="propLng">-</span>
+                        </div>
+                        <div class="coord-item">
+                            <label>纬度</label>
+                            <span id="propLat">-</span>
+                        </div>
+                        <button class="btn-copy-coord" onclick="copyCurrentCoordinates()">
+                            <i class="fa-solid fa-copy"></i> 复制坐标
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 图标预览 -->
+                <div class="property-section">
+                    <h3>外观设置</h3>
+                    <div class="icon-preview-row">
+                        <div id="currentIconPreview" class="current-icon-display">
+                            <div class="preview-marker">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+                        </div>
+                        <button class="btn-change-icon" onclick="changeIconFromDrawer()">
+                            <i class="fa-solid fa-palette"></i> 更换图标/颜色
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 自定义属性 -->
+                <div class="property-section">
+                    <h3>自定义属性</h3>
+                    <div id="customPropertyList" class="custom-props-list"></div>
+                    <div class="add-property-form">
+                        <input type="text" id="newPropKey" placeholder="属性名" />
+                        <input type="text" id="newPropValue" placeholder="属性值" />
+                        <button onclick="addCustomProperty()">+ 添加</button>
+                    </div>
+                </div>
+
+                <!-- 快捷操作 -->
+                <div class="property-section">
+                    <h3>快捷操作</h3>
+                    <div class="quick-actions">
+                        <button class="action-btn" onclick="openEventTrackerFromDrawer()">
+                            <i class="fa-solid fa-calendar-check"></i> 事件追踪器
+                        </button>
+                        <button class="action-btn danger" onclick="deleteMarkerFromDrawer()">
+                            <i class="fa-solid fa-trash"></i> 删除标记
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="drawer-footer">
+                <button class="btn-cancel" onclick="closePropertyDrawer()">取消</button>
+                <button class="btn-save" onclick="savePropertyChanges()">保存</button>
             </div>
         </div>
+    </div>
 
-        <!-- 属性编辑器侧边抽屉 -->
-        <div id="propertyDrawer" class="property-drawer" style="display:none;">
-            <div class="drawer-overlay" onclick="closePropertyDrawer()"></div>
-            <div class="drawer-content">
-                <div class="drawer-header">
-                    <h2>📝 标记属性</h2>
-                    <button class="btn-close-drawer" onclick="closePropertyDrawer()">×</button>
-                </div>
-
-                <div class="drawer-body">
-                    <!-- 基础信息 -->
-                    <div class="property-section">
-                        <h3>基础信息</h3>
-                        <div class="form-group">
-                            <label>名称 *</label>
-                            <input type="text" id="propName" placeholder="标记名称" />
-                        </div>
-                        <div class="form-group">
-                            <label>类型</label>
-                            <input type="text" id="propType" placeholder="标记类型" />
-                        </div>
-                        <div class="form-group">
-                            <label>地址</label>
-                            <input type="text" id="propAddress" placeholder="详细地址" />
-                        </div>
-                    </div>
-
-                    <!-- 坐标信息 -->
-                    <div class="property-section">
-                        <h3>坐标信息</h3>
-                        <div class="coord-display">
-                            <div class="coord-item">
-                                <label>经度</label>
-                                <span id="propLng">-</span>
-                            </div>
-                            <div class="coord-item">
-                                <label>纬度</label>
-                                <span id="propLat">-</span>
-                            </div>
-                            <button class="btn-copy-coord" onclick="copyCurrentCoordinates()">
-                                <i class="fa-solid fa-copy"></i> 复制坐标
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 图标预览 -->
-                    <div class="property-section">
-                        <h3>外观设置</h3>
-                        <div class="icon-preview-row">
-                            <div id="currentIconPreview" class="current-icon-display">
-                                <div class="preview-marker">
-                                    <i class="fa-solid fa-location-dot"></i>
-                                </div>
-                            </div>
-                            <button class="btn-change-icon" onclick="changeIconFromDrawer()">
-                                <i class="fa-solid fa-palette"></i> 更换图标/颜色
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 自定义属性 -->
-                    <div class="property-section">
-                        <h3>自定义属性</h3>
-                        <div id="customPropertyList" class="custom-props-list"></div>
-                        <div class="add-property-form">
-                            <input type="text" id="newPropKey" placeholder="属性名" />
-                            <input type="text" id="newPropValue" placeholder="属性值" />
-                            <button onclick="addCustomProperty()">+ 添加</button>
-                        </div>
-                    </div>
-
-                    <!-- 快捷操作 -->
-                    <div class="property-section">
-                        <h3>快捷操作</h3>
-                        <div class="quick-actions">
-                            <button class="action-btn" onclick="openEventTrackerFromDrawer()">
-                                <i class="fa-solid fa-calendar-check"></i> 事件追踪器
-                            </button>
-                            <button class="action-btn danger" onclick="deleteMarkerFromDrawer()">
-                                <i class="fa-solid fa-trash"></i> 删除标记
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="drawer-footer">
-                    <button class="btn-cancel" onclick="closePropertyDrawer()">取消</button>
-                    <button class="btn-save" onclick="savePropertyChanges()">保存</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Leaflet JS -->
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-        <!-- Leaflet.draw JS -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js" crossorigin=""></script>
-        <!-- PapaParse for CSV parsing -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"
-            crossorigin="anonymous"></script>
-        <!-- SheetJS for Excel support -->
-        <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-        <!-- Tabulator JS -->
-        <script src="https://unpkg.com/tabulator-tables@5.5/dist/js/tabulator.min.js"></script>
-        <!-- Marker Group Manager -->
-        <script src="marker-group.js"></script>
-        <!-- Selection Manager -->
-        <script src="selection-manager.js"></script>
-        <!-- Layer Statistics -->
-        <script src="layer-stats.js"></script>
-        <!-- Custom Group Manager -->
-        <script src="custom-group-manager.js"></script>
-        <!-- Timeline Manager -->
-        <script src="timeline-manager.js"></script>
-        <!-- Dashboard Panel -->
-        <script src="dashboard-panel.js"></script>
-        <script src="script.js"></script>
-        <script src="property-editor.js"></script>
-        <script src="table-view.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <!-- Leaflet.draw JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js" crossorigin=""></script>
+    <!-- PapaParse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"
+        crossorigin="anonymous"></script>
+    <!-- SheetJS for Excel support -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Tabulator JS -->
+    <script src="https://unpkg.com/tabulator-tables@5.5/dist/js/tabulator.min.js"></script>
+    <!-- Marker Group Manager -->
+    <script src="marker-group.js"></script>
+    <!-- Selection Manager -->
+    <script src="selection-manager.js"></script>
+    <!-- Layer Statistics -->
+    <script src="layer-stats.js"></script>
+    <!-- Custom Group Manager -->
+    <script src="custom-group-manager.js"></script>
+    <!-- Timeline Manager -->
+    <script src="timeline-manager.js"></script>
+    <!-- Dashboard Panel -->
+    <script src="dashboard-panel.js"></script>
+    <script src="script.js"></script>
+    <script src="property-editor.js"></script>
+    <script src="table-view.js"></script>
 </body>
 
 </html>
