@@ -4,6 +4,28 @@
 
 ---
 
+## [v2.10.0] - 2026-01-17
+
+### ✨ 新功能
+
+#### 分发构建版本
+- **单网页版** (`index-single.html`)：所有 JS/CSS 内联到一个 HTML 文件
+- **便携版** (`/portable`)：独立目录结构，可拷贝即用或打包为桌面应用
+- **构建脚本** (`build-single.py`)：自动合并生成单文件版本
+
+#### API 挂接模块 (`portable/js/api-hooks.js`)
+- `GeoMapAPI.loadGeoJSON()` / `saveGeoJSON()` - GeoJSON 数据操作
+- `GeoMapAPI.listArchives()` / `loadArchive()` / `saveArchive()` - 存档管理
+- `GeoMapAPI.listSnapshots()` / `saveSnapshot()` / `loadSnapshot()` - 快照管理
+- `GeoMapAPI.loadUserConfig()` / `saveUserConfig()` - 用户配置
+- `GeoMapAPI.geocodeAddress()` - 地理编码服务
+- 当前使用 localStorage 实现，后续可替换为后端 API
+
+### 📝 文档更新
+- README.md 新增"构建与分发"章节
+
+---
+
 ## [v2.9.2] - 2026-01-14
 
 ### 🐛 Bug 修复
