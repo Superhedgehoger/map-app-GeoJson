@@ -1383,6 +1383,13 @@ function importGeoJSON(raw) {
                             markerGroupManager.addMarker(layer);
                         }
                     }
+
+                    // 恢复范围圈（如果有 radiusRings 数据）
+                    if (feature.properties && feature.properties.radiusRings && feature.properties.radiusRings.length > 0) {
+                        if (typeof updateRadiusRingsOnMap === 'function') {
+                            updateRadiusRingsOnMap(layer);
+                        }
+                    }
                 } else {
                     // Non-marker layers go directly to drawnItems
                     // 绑定点击事件
