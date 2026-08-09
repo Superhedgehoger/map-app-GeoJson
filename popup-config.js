@@ -121,7 +121,8 @@ function renderMarkerPopupHtml(marker) {
         .join('');
 
     // 获取事件列表 HTML（保留原有逻辑）
-    const events = props.events || [];
+    const eventTrackerEnabled = !window.GEOMAP_FEATURES || window.GEOMAP_FEATURES.eventTracker !== false;
+    const events = eventTrackerEnabled ? (props.events || []) : [];
     let eventListHtml = '';
     if (events.length > 0) {
         const recentEvents = events.slice(-3).reverse();

@@ -1175,7 +1175,7 @@ function updateLayerList() {
         const name = props.名称 || props.name || layer.options.name || `${type} ${index}`;
         const color = props['marker-color'] || props.stroke || '#4a90e2';
 
-        const events = props.events || [];
+        const events = isEventTrackerEnabled() ? (props.events || []) : [];
         const eventBadge = layer instanceof L.Marker && events.length > 0
             ? `<span class="event-badge">${events.length}</span>`
             : '';
@@ -1833,7 +1833,7 @@ function _bindMarkerPopupFallback(layer) {
     const name = props['\u540d\u79f0'] || props.name || layer.options.name || '\u672a\u547d\u540d\u6807\u8bb0';
     const type = props['\u7c7b\u578b'] || props.type || '';
     const address = props['\u5730\u5740'] || props.address || '';
-    const events = props.events || [];
+    const events = isEventTrackerEnabled() ? (props.events || []) : [];
     let eventListHtml = '';
     if (events.length > 0) {
         const recentEvents = events.slice(-3).reverse();
