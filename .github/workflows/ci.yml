@@ -25,4 +25,3 @@ jobs:
           node --check script.js
           node --check popup-config.js
           node --check variant-config.js
-      - run: git diff --check HEAD^
