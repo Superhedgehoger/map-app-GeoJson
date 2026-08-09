@@ -21,6 +21,16 @@ class VariantBuildTests(unittest.TestCase):
         self.assertIn("geomap-app-lite", config)
         self.assertIn("'full'", (ROOT / "distribution-config.js").read_text(encoding="utf-8"))
 
+    def test_query_variant_overrides_distribution_default(self):
+        config = (ROOT / "variant-config.js").read_text(encoding="utf-8")
+        self.assertIn("queryVariant || explicitVariant", config)
+
+    def test_lite_variant_suppresses_event_rendering(self):
+        script = (ROOT / "script.js").read_text(encoding="utf-8")
+        popup = (ROOT / "popup-config.js").read_text(encoding="utf-8")
+        self.assertGreaterEqual(script.count("isEventTrackerEnabled() ? (props.events || []) : []"), 2)
+        self.assertIn("eventTrackerEnabled ? (props.events || []) : []", popup)
+
     def test_lite_build_injects_variant_and_all_local_modules(self):
         builder = load_builder()
         with tempfile.TemporaryDirectory() as temp_dir:

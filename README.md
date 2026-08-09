@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![Version](https://img.shields.io/badge/version-v2.18.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v2.18.1-blue.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![GitHub](https://img.shields.io/badge/github-Geomap--app-181717.svg?logo=github)](https://github.com/Superhedgehoger/Geomap-app)
 
@@ -88,7 +88,7 @@ Visit: `http://localhost:8000`
 
 #### Lite Version
 
-Full 和 Lite 自 v2.18.0 起共用同一套核心源码：Lite 仅通过功能配置关闭事件追踪器，不再维护独立的业务逻辑分支。
+Full 和 Lite 自 v2.18.1 起由本仓库的单一源码发布：Lite 入口跳转到 `?variant=lite`，通过功能配置关闭事件追踪器，不再保存第二套 JS/CSS 源码。
 Lightweight version focused on core map editing (without event tracker):  
 🔗 **[Geomap-app-lite](https://github.com/Superhedgehoger/Geomap-app-lite)**
 
@@ -213,7 +213,7 @@ python -m http.server 8000
 
 #### Lite 版本
 
-Full 和 Lite 自 v2.18.0 起共用同一套核心源码：Lite 仅通过功能配置关闭事件追踪器，不再维护独立的业务逻辑分支。
+Full 和 Lite 自 v2.18.1 起由本仓库的单一源码发布：Lite 入口跳转到 `?variant=lite`，通过功能配置关闭事件追踪器，不再保存第二套 JS/CSS 源码。
 轻量级版本，专注核心地图编辑功能（不含事件追踪器）：  
 🔗 **[Geomap-app-lite](https://github.com/Superhedgehoger/Geomap-app-lite)**
 
