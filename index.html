@@ -432,7 +432,7 @@
     <div id="map"></div>
 
     <!-- 战略事件追踪器面板 -->
-    <div id="eventTrackerPanel" class="panel" style="display:none;">
+    <div id="eventTrackerPanel" class="panel" data-feature="event-tracker" style="display:none;">
         <div class="panel-header">
             <h2>战略事件追踪器</h2>
             <button id="closeEventTrackerBtn" onclick="closeEventTracker()">关闭</button>
@@ -512,7 +512,7 @@
 
     <!-- 右键菜单 -->
     <div id="contextMenu" class="context-menu" style="display:none;">
-        <div class="context-menu-item" onclick="openEventTrackerFromMenu(event)">📋 事件追踪器</div>
+        <div class="context-menu-item" data-feature="event-tracker" onclick="openEventTrackerFromMenu(event)">📋 事件追踪器</div>
         <div class="context-menu-item" onclick="openPropertyEditor()">📝 属性编辑器</div>
         <div class="context-menu-item" onclick="openIconPicker()">🎨 更改图标</div>
         <div class="context-menu-item" onclick="deleteSelectedMarker()">删除标记</div>
@@ -796,7 +796,7 @@
                 <div class="property-section">
                     <h3>快捷操作</h3>
                     <div class="quick-actions">
-                        <button class="action-btn" onclick="openEventTrackerFromDrawer()">
+                        <button class="action-btn" data-feature="event-tracker" onclick="openEventTrackerFromDrawer()">
                             <i class="fa-solid fa-calendar-check"></i> 事件追踪器
                         </button>
                         <button class="action-btn danger" onclick="deleteMarkerFromDrawer()">
@@ -840,6 +840,10 @@
     <script src="dashboard-panel.js"></script>
     <!-- UI Dialogs: unified Toast + Confirm system -->
     <script src="ui-dialogs.js"></script>
+    <!-- Distribution default (the Lite repository changes only this file) -->
+    <script src="distribution-config.js"></script>
+    <!-- Full/Lite feature selection -->
+    <script src="variant-config.js"></script>
     <!-- Popup Config Module - 弹出信息字段自定义 -->
     <script src="popup-config.js"></script>
     <script src="script.js"></script>

@@ -16,6 +16,10 @@ const TENCENT_MAP_KEY = '';
 // 天地图 Token（需在 https://console.tianditu.gov.cn/ 注册）
 const TIANDITU_TOKEN = '';
 
+function isEventTrackerEnabled() {
+    return !window.GEOMAP_FEATURES || window.GEOMAP_FEATURES.eventTracker !== false;
+}
+
 // ==== Initialize Map ==== //
 const map = L.map('map', {
     zoomControl: false  // 禁用默认缩放控件（缩放按钮在左侧面板中）
@@ -737,13 +741,13 @@ async function clearAllLayersWithConfirm() {
     if (typeof markerGroupManager !== 'undefined' && markerGroupManager) {
         const stats = markerGroupManager.getStats();
         // If markers are grouped, they might not be in drawnItems, so add them
-        // Note: Stats might overlap if some are still in drawnItems, but for "Is Empty" check, 
+        // Note: Stats might overlap if some are still in drawnItems, but for "Is Empty" check,
         // as long as > 0 it's fine.
         layerCount += (stats.totalMarkers || 0);
     }
 
     // Also check raw map layers just in case (optional, but safer to avoid 'No layers' when things are visible)
-    // But map.eachLayer includes tiles, so be careful. 
+    // But map.eachLayer includes tiles, so be careful.
     // Stick to the manager check first.
 
     if (layerCount === 0) {
@@ -3603,6 +3607,7 @@ function saveMarkerEvents(feature, events) {
 
 // Open event tracker for a feature - shows event list
 function openEventTracker(feature) {
+    if (!isEventTrackerEnabled()) return;
     currentTrackedFeature = feature;
     currentEditingEventId = null;
 
@@ -5149,8 +5154,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Prevent doubletoggle if inline also works
             // But toggleControlsPanel checks state, so it might just toggle back?
             // Actually classList.toggle is relative. If called twice, it flips back.
-            // Using a flag or check? 
-            // Better: relying on ONE method. 
+            // Using a flag or check?
+            // Better: relying on ONE method.
             // Since we added inline onclick, let's just log here or do nothing if inline works.
             // But if inline fails (scope), this listener is the savior.
             // Let's check if the inline function is defined.
