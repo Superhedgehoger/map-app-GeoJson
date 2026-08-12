@@ -2,6 +2,14 @@
 
 本文档记录 GeoJSON 地图编辑器的所有版本更新，从新到旧排列。
 
+## [v3.0.1] - 2026-08-12
+
+### 启动与发布
+
+- 修复 Windows 双击 `启动地图编辑器.bat` 仍调用旧 Python 静态服务器，导致 Vite/TypeScript 入口和本地 vendor 资源无法加载的问题
+- 启动脚本现在会定位自身目录、检查 Node.js/npm、首次安装依赖、生成 vendor 资源并自动打开 Vite 本地服务
+- 新增 tag 触发的 GitHub Release 工作流，发布时自动构建 Pages 产物与 Full/Lite 离线单文件附件
+
 ## [v3.0.0] - 2026-08-12
 
 ### 工程与架构

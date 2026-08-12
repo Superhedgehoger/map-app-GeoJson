@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![Version](https://img.shields.io/badge/version-v3.0.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v3.0.1-blue.svg)](CHANGELOG.md)
 [![CI](https://github.com/Superhedgehoger/Geomap-app/actions/workflows/ci.yml/badge.svg)](https://github.com/Superhedgehoger/Geomap-app/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -37,6 +37,8 @@ cd Geomap-app
 npm ci
 npm run dev
 ```
+
+Windows 用户也可以双击 `启动地图编辑器.bat`。它会进入项目目录、检查 Node.js/npm、首次安装依赖、生成本地 vendor 资源并自动打开 Vite 服务。
 
 打开终端输出的本地地址。生产构建使用：
 

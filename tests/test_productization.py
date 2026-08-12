@@ -34,6 +34,13 @@ class ProductizationContracts(unittest.TestCase):
         self.assertNotRegex(html, r'<(?:script|link)[^>]+(?:src|href)="https?://')
         self.assertIn('/vendor/leaflet/leaflet.js', html)
 
+    def test_windows_launcher_uses_vite_runtime(self):
+        launcher = (ROOT / "启动地图编辑器.bat").read_text(encoding="utf-8")
+        self.assertIn("npm run prepare:vendor", launcher)
+        self.assertIn("npm run dev", launcher)
+        self.assertIn("--host 127.0.0.1 --open", launcher)
+        self.assertNotIn("python server.py", launcher)
+
 
 if __name__ == "__main__":
     unittest.main()
