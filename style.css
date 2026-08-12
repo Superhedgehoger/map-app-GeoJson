@@ -6308,3 +6308,112 @@ body.screenshot-mode #map {
     padding-top: 14px;
     border-top: 1px solid rgba(255,255,255,0.07);
 }
+/* ==== Productization baseline: accessibility, responsive layout and offline map ==== */
+.mobile-notice {
+    display: none;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 3px solid #7db3ff;
+    outline-offset: 2px;
+}
+
+button,
+[role="button"] {
+    min-height: 36px;
+}
+
+body.is-offline #map {
+    background-color: #17202a;
+    background-image:
+        linear-gradient(rgba(125, 179, 255, 0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(125, 179, 255, 0.12) 1px, transparent 1px);
+    background-size: 48px 48px;
+}
+
+body.is-offline .leaflet-tile-pane {
+    opacity: 0;
+}
+
+body.is-offline #map::after {
+    content: "离线编辑模式 · 在线后自动恢复底图";
+    position: absolute;
+    z-index: 700;
+    right: 16px;
+    top: 16px;
+    padding: 8px 12px;
+    border: 1px solid rgba(125, 179, 255, 0.5);
+    border-radius: 8px;
+    background: rgba(23, 32, 42, 0.88);
+    color: #dcecff;
+    font-size: 12px;
+    pointer-events: none;
+}
+
+@media (max-width: 1023px) {
+    #controls.panel {
+        width: min(320px, calc(100vw - 32px));
+        max-height: calc(100vh - 32px);
+    }
+
+    #layerPanel {
+        width: min(360px, calc(100vw - 32px));
+    }
+
+    .table-panel,
+    #tablePanel {
+        left: 16px;
+        right: 16px;
+        width: auto;
+        max-height: 48vh;
+    }
+}
+
+@media (max-width: 767px) {
+    .mobile-notice {
+        display: block;
+        position: fixed;
+        z-index: 2200;
+        top: 8px;
+        left: 50%;
+        width: min(92vw, 520px);
+        transform: translateX(-50%);
+        padding: 8px 12px;
+        border: 1px solid rgba(125, 179, 255, 0.45);
+        border-radius: 9px;
+        background: rgba(24, 34, 48, 0.92);
+        color: #eef6ff;
+        font-size: 12px;
+        text-align: center;
+        backdrop-filter: blur(8px);
+    }
+
+    #controls.panel {
+        top: auto;
+        bottom: 12px;
+        left: 12px;
+        width: min(300px, calc(100vw - 24px));
+        max-height: 62vh;
+    }
+
+    #toggleDrawToolbarBtn,
+    .leaflet-draw,
+    .table-panel,
+    #tablePanel,
+    .dashboard-panel,
+    #dashboardPanel,
+    .property-drawer {
+        display: none !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

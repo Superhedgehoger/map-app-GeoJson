@@ -3,6 +3,12 @@
 
 const POPUP_CONFIG_KEY = 'geomap_popup_config';
 
+function escapePopupText(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    })[char]);
+}
+
 /**
  * 默认弹出字段配置
  * key: 内部唯一键名
@@ -96,7 +102,7 @@ function renderMarkerPopupHtml(marker) {
                 const lng = latlng.lng.toFixed(6);
                 return `
                     <div class="popup-field-row">
-                        <span class="popup-field-label">${f.label}</span>
+                        <span class="popup-field-label">${escapePopupText(f.label)}</span>
                         <span class="popup-field-value popup-coords">
                             ${lat}, ${lng}
                             <button class="btn-copy-coords"
@@ -113,8 +119,8 @@ function renderMarkerPopupHtml(marker) {
             if (!value) return '';  // 值为空则不渲染该行
             return `
                 <div class="popup-field-row">
-                    <span class="popup-field-label">${f.label}</span>
-                    <span class="popup-field-value">${value}</span>
+                    <span class="popup-field-label">${escapePopupText(f.label)}</span>
+                    <span class="popup-field-value">${escapePopupText(value)}</span>
                 </div>`;
         })
         .filter(Boolean)
@@ -130,8 +136,8 @@ function renderMarkerPopupHtml(marker) {
             <div class="popup-events-header">📋 最近事件 (${events.length})</div>
             ${recentEvents.map(evt => `
                 <div class="popup-event-item">
-                    <span class="popup-event-date">${evt.created?.split('T')[0] || '无日期'}</span>
-                    <span class="popup-event-name">${evt.eventName || '未命名事件'}</span>
+                    <span class="popup-event-date">${escapePopupText(evt.created?.split('T')[0] || '无日期')}</span>
+                    <span class="popup-event-name">${escapePopupText(evt.eventName || '未命名事件')}</span>
                 </div>
             `).join('')}
             ${events.length > 3 ? `<div class="popup-event-more">还有 ${events.length - 3} 个事件...</div>` : ''}
@@ -139,7 +145,7 @@ function renderMarkerPopupHtml(marker) {
     }
 
     return `<div class="marker-popup">
-        <h3 class="popup-title">${titleName}</h3>
+        <h3 class="popup-title">${escapePopupText(titleName)}</h3>
         <div class="popup-fields">
             ${fieldsHtml || '<span class="popup-no-fields">（无启用字段）</span>'}
         </div>
@@ -184,8 +190,8 @@ function renderPopupConfigList() {
                     onchange="togglePopupField(${idx}, this.checked)">
                 <span class="toggle-slider"></span>
             </label>
-            <span class="popup-config-label">${field.label}</span>
-            <span class="popup-config-key">${field.key}</span>
+            <span class="popup-config-label">${escapePopupText(field.label)}</span>
+            <span class="popup-config-key">${escapePopupText(field.key)}</span>
             ${!field.builtIn ? `
                 <button class="popup-config-del-btn" onclick="deletePopupField(${idx})" title="删除">✕</button>
             ` : '<span class="popup-config-builtin">内置</span>'}
@@ -270,7 +276,7 @@ function populateKnownFieldsDatalist() {
     if (typeof drawnItems !== 'undefined' && drawnItems) drawnItems.eachLayer(collectFromLayer);
     if (typeof markerClusterGroup !== 'undefined' && markerClusterGroup) markerClusterGroup.eachLayer(collectFromLayer);
 
-    datalist.innerHTML = [...keys].map(k => `<option value="${k}">`).join('');
+    datalist.innerHTML = [...keys].map(k => `<option value="${escapePopupText(k)}">`).join('');
 }
 
 /**

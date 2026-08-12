@@ -2,6 +2,23 @@
 
 本文档为开发者提供代码结构、扩展方法和最佳实践说明。
 
+> v3 开发以 [`ARCHITECTURE_V3.md`](ARCHITECTURE_V3.md) 为准。根目录 JavaScript 是渐进迁移兼容层，不应再新增跨模块全局状态。
+
+## v3 开发流程
+
+```bash
+npm ci
+npm run dev
+npm run check
+npm run test:e2e
+```
+
+- 新业务逻辑写入 `src/` 并通过 `FeatureStore` 读写状态。
+- Leaflet 对象只能由地图适配层持有，不得进入可持久化工作区。
+- 所有导入字段视为不可信；显示、URL、表格导出分别使用 `src/security.ts` 的边界函数。
+- Full/Lite 差异只能通过 `AppConfig.capabilities` 表达。
+- Pages 和单文件构建分别使用 `npm run build:pages`、`npm run build:standalone:all`。
+
 ---
 
 ## 项目结构
@@ -212,4 +229,3 @@ updateFeatureTable();
 1. 更新根目录 `CHANGELOG.md`（唯一权威日志）
 2. 必要时更新本开发者指南
 3. 必要时更新 `API_REFERENCE.md`
-
