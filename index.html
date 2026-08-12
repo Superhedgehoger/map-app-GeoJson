@@ -5,34 +5,36 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GeoJSON 地图编辑器</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='26' r='18' fill='%231677ff'/%3E%3Cpath d='M32 60 17 34h30z' fill='%231677ff'/%3E%3Ccircle cx='32' cy='26' r='7' fill='white'/%3E%3C/svg%3E" />
 
     <!-- FontAwesome 6 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        crossorigin="anonymous" />
+    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css" />
     <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
     <!-- Leaflet.draw CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"
-        crossorigin="" />
+    <link rel="stylesheet" href="/vendor/leaflet-draw/leaflet.draw.css" />
     <!-- Leaflet.markercluster CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="/vendor/leaflet-markercluster/MarkerCluster.css" />
+    <link rel="stylesheet" href="/vendor/leaflet-markercluster/MarkerCluster.Default.css" />
     <!-- Tabulator CSS (dark theme) -->
-    <link href="https://unpkg.com/tabulator-tables@5.5/dist/css/tabulator_midnight.min.css" rel="stylesheet">
+    <link href="/vendor/tabulator/tabulator_midnight.min.css" rel="stylesheet">
     <!-- Custom Styles -->
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="table-view-styles.css" />
     <!-- html2canvas for screenshot -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script defer src="/vendor/html2canvas/html2canvas.min.js"></script>
 </head>
 
 <body>
+    <div id="mobileNotice" class="mobile-notice" role="status">
+        手机端提供地图浏览与数据导入导出；完整绘图和表格编辑请使用平板或桌面浏览器。
+    </div>
     <!-- 左侧悬浮控制面板 -->
     <div id="controls" class="panel">
         <div class="panel-header">
             <h2>地图控制</h2>
             <button id="btn-map-control-collapse" class="btn-toggle-toolbar" title="收起/展开"
-                onclick="console.log('Inline Click P'); window.toggleControlsPanel()"
+                aria-label="收起或展开地图控制面板"
                 style="position: relative; z-index: 2001;">
                 <i class="fa-solid fa-chevron-left"></i>
             </button>
@@ -63,13 +65,11 @@
             <!-- 主要操作区（置顶） -->
             <div class="primary-actions-group"
                 style="padding: 0 12px 12px 12px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px;">
-                <button id="btn-show-layer-panel" class="btn-primary"
-                    onclick="console.log('Inline Click Layer'); window.toggleLayerPanel()"
+                <button id="btn-show-layer-panel" class="btn-primary" aria-controls="layerPanel" aria-expanded="false"
                     style="width:100%; margin-bottom: 8px; position: relative; z-index: 2001;">
                     <i class="fa-solid fa-layer-group"></i> 显示图层面板
                 </button>
                 <button id="btn-clear-all-layers" class="btn-danger"
-                    onclick="console.log('Inline Click Clear'); window.clearAllLayersWithConfirm()"
                     style="width:100%; margin-bottom: 8px; position: relative; z-index: 2001;">
                     <i class="fa-solid fa-trash-can"></i> 清空所有图层
                 </button>
@@ -814,41 +814,41 @@
     </div>
 
     <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script defer src="/vendor/leaflet/leaflet.js"></script>
     <!-- Leaflet.draw JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js" crossorigin=""></script>
+    <script defer src="/vendor/leaflet-draw/leaflet.draw.js"></script>
     <!-- Leaflet.markercluster JS -->
-    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script defer src="/vendor/leaflet-markercluster/leaflet.markercluster.js"></script>
     <!-- PapaParse for CSV parsing -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"
-        crossorigin="anonymous"></script>
+    <script defer src="/vendor/papaparse/papaparse.min.js"></script>
     <!-- SheetJS for Excel support -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script defer src="/vendor/xlsx/xlsx.full.min.js"></script>
     <!-- Tabulator JS -->
-    <script src="https://unpkg.com/tabulator-tables@5.5/dist/js/tabulator.min.js"></script>
+    <script defer src="/vendor/tabulator/tabulator.min.js"></script>
+    <script defer src="/vendor/dompurify/purify.min.js"></script>
     <!-- Marker Group Manager -->
-    <script src="marker-group.js"></script>
+    <script defer src="marker-group.js"></script>
     <!-- Selection Manager -->
-    <script src="selection-manager.js"></script>
+    <script defer src="selection-manager.js"></script>
     <!-- Layer Statistics -->
-    <script src="layer-stats.js"></script>
+    <script defer src="layer-stats.js"></script>
     <!-- Custom Group Manager -->
-    <script src="custom-group-manager.js"></script>
+    <script defer src="custom-group-manager.js"></script>
     <!-- Timeline Manager -->
-    <script src="timeline-manager.js"></script>
+    <script defer src="timeline-manager.js"></script>
     <!-- Dashboard Panel -->
-    <script src="dashboard-panel.js"></script>
+    <script defer src="dashboard-panel.js"></script>
     <!-- UI Dialogs: unified Toast + Confirm system -->
-    <script src="ui-dialogs.js"></script>
+    <script defer src="ui-dialogs.js"></script>
     <!-- Distribution default (the Lite repository changes only this file) -->
-    <script src="distribution-config.js"></script>
+    <script defer src="distribution-config.js"></script>
     <!-- Full/Lite feature selection -->
-    <script src="variant-config.js"></script>
+    <script defer src="variant-config.js"></script>
     <!-- Popup Config Module - 弹出信息字段自定义 -->
-    <script src="popup-config.js"></script>
-    <script src="script.js"></script>
-    <script src="property-editor.js"></script>
-    <script src="table-view.js"></script>
+    <script defer src="popup-config.js"></script>
+    <script defer src="script.js"></script>
+    <script defer src="property-editor.js"></script>
+    <script defer src="table-view.js"></script>
 
     <!-- ==== Popup Config Modal ==== -->
     <div id="popupConfigModal" class="popup-config-modal-overlay" style="display:none">
@@ -884,6 +884,7 @@
             </div>
         </div>
     </div>
+    <script type="module" src="/src/main.ts"></script>
 </body>
 
 </html>

@@ -118,12 +118,15 @@ function toggleLayerPanel() {
     if (!layerPanel) return;
 
     layerPanel.classList.toggle('open');
-    console.log('[UI] Layer Panel toggled:', layerPanel.classList.contains('open') ? 'OPEN' : 'CLOSED');
-
-    // 如果图层面板打开，可能需要调整地图控件位置或做其他 UI 响应
-    if (layerPanel.classList.contains('open')) {
-        // 重置选中状态（如果有必要）
+    const isOpen = layerPanel.classList.contains('open');
+    const button = document.getElementById('btn-show-layer-panel');
+    if (button) {
+        button.setAttribute('aria-expanded', String(isOpen));
+        button.innerHTML = isOpen
+            ? '<i class="fa-solid fa-layer-group"></i> 隐藏图层面板'
+            : '<i class="fa-solid fa-layer-group"></i> 显示图层面板';
     }
+    console.log('[UI] Layer Panel toggled:', isOpen ? 'OPEN' : 'CLOSED');
 }
 
 function toggleControlsPanel() {
@@ -939,7 +942,7 @@ const editorPanel = document.getElementById('editorPanel');
 const geojsonEditor = document.getElementById('geojsonEditor');
 const applyEditorBtn = document.getElementById('applyEditorBtn');
 const layerList = document.getElementById('layerList');
-const clearAllBtn = document.getElementById('clearAllBtn');
+const clearAllBtn = document.getElementById('btn-clear-all-layers');
 const showLabelsCheck = document.getElementById('showLabelsCheck');
 const markerIconSelect = document.getElementById('markerIconSelect');
 
@@ -961,7 +964,7 @@ const searchBtn = document.getElementById('searchBtn');
 const gotoLatInput = document.getElementById('gotoLat');
 const gotoLngInput = document.getElementById('gotoLng');
 const gotoCoordBtn = document.getElementById('gotoCoordBtn');
-const toggleLayerPanelBtn = document.getElementById('toggleLayerPanelBtn');
+const toggleLayerPanelBtn = document.getElementById('btn-show-layer-panel');
 
 // Excel UI elements
 const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
@@ -1173,7 +1176,8 @@ function updateLayerList() {
 
         const props = layer.feature?.properties || {};
         const name = props.名称 || props.name || layer.options.name || `${type} ${index}`;
-        const color = props['marker-color'] || props.stroke || '#4a90e2';
+        const requestedColor = props['marker-color'] || props.stroke || '#4a90e2';
+        const color = /^#[0-9a-f]{3,8}$/i.test(String(requestedColor)) ? requestedColor : '#4a90e2';
 
         const events = isEventTrackerEnabled() ? (props.events || []) : [];
         const eventBadge = layer instanceof L.Marker && events.length > 0
@@ -1192,7 +1196,7 @@ function updateLayerList() {
         item.innerHTML = `
             <button class="layer-btn-main" data-action="focus" data-id="${layerId}" title="点击定位">
                 <span class="layer-icon" style="color: ${color}"><i class="${iconClass}"></i></span>
-                <span class="layer-name">${name}</span>
+                <span class="layer-name">${escapeHtml(String(name))}</span>
                 ${eventBadge}
                 <span class="layer-type">${type}</span>
             </button>
@@ -1225,8 +1229,8 @@ function updateLayerList() {
             header.className = 'layer-group-header';
             header.innerHTML = `
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <i class="fa-solid ${group.expanded ? 'fa-folder-open' : 'fa-folder'}" style="color:${group.color}"></i>
-                    <span>${group.groupName}</span>
+                    <i class="fa-solid ${group.expanded ? 'fa-folder-open' : 'fa-folder'}" style="color:${/^#[0-9a-f]{3,8}$/i.test(String(group.color)) ? group.color : '#4a90e2'}"></i>
+                    <span>${escapeHtml(String(group.groupName))}</span>
                 </div>
                 <div style="display:flex; align-items:center; gap:8px;">
                     <span class="badge">${layers.length}</span>
@@ -2082,7 +2086,7 @@ function changeMarkerIcon() {
 
 function deleteSelectedMarker() {
     if (!contextMenuTarget) return;
-    // Redirect to the unified delete function
+    // Redirect to the unified deletion handler
     deleteLayer(L.stamp(contextMenuTarget));
     hideContextMenu();
 }
@@ -3197,38 +3201,27 @@ if (addressFileInput) {
 }
 
 
-togglePickerBtn.addEventListener('click', () => {
-    pickerMode = !pickerMode;
-    togglePickerBtn.textContent = pickerMode ? '关闭坐标拾取' : '启用坐标拾取';
-    pickedCoordsDiv.textContent = pickerMode ? '点击地图拾取坐标...' : '';
-    map.getContainer().style.cursor = pickerMode ? 'crosshair' : '';
-});
+if (togglePickerBtn && pickedCoordsDiv) {
+    togglePickerBtn.addEventListener('click', () => {
+        pickerMode = !pickerMode;
+        togglePickerBtn.textContent = pickerMode ? '关闭坐标拾取' : '启用坐标拾取';
+        pickedCoordsDiv.textContent = pickerMode ? '点击地图拾取坐标...' : '';
+        map.getContainer().style.cursor = pickerMode ? 'crosshair' : '';
+    });
+}
 
-addManualMarkerBtn.addEventListener('click', () => {
-    manualMarkerMode = !manualMarkerMode;
-    addManualMarkerBtn.textContent = manualMarkerMode ? '取消添加' : '点击地图添加';
-    map.getContainer().style.cursor = manualMarkerMode ? 'crosshair' : '';
-});
+if (addManualMarkerBtn) {
+    addManualMarkerBtn.addEventListener('click', () => {
+        manualMarkerMode = !manualMarkerMode;
+        addManualMarkerBtn.textContent = manualMarkerMode ? '取消添加' : '点击地图添加';
+        map.getContainer().style.cursor = manualMarkerMode ? 'crosshair' : '';
+    });
+}
 
 // Layer panel toggle
-toggleLayerPanelBtn.addEventListener('click', toggleLayerPanel);
-
-function toggleLayerPanel() {
-    const panel = document.getElementById('layerPanel');
-    const btn = document.getElementById('toggleLayerPanelBtn');
-
-    if (panel) {
-        panel.classList.toggle('open');
-
-        if (btn) {
-            const isOpen = panel.classList.contains('open');
-            btn.innerHTML = isOpen
-                ? '<i class="fa-solid fa-layer-group"></i> 隐藏图层面板'
-                : '<i class="fa-solid fa-layer-group"></i> 显示图层面板';
-        }
-    }
+if (toggleLayerPanelBtn) {
+    toggleLayerPanelBtn.addEventListener('click', toggleLayerPanel);
 }
-window.toggleLayerPanel = toggleLayerPanel;
 
 // 图层分组折叠切换
 function toggleLayerSection(sectionId) {
@@ -3268,22 +3261,6 @@ function filterLayers(query) {
     });
 }
 window.filterLayers = filterLayers;
-
-// 清除图层搜索
-function clearLayerSearch() {
-    const input = document.getElementById('layerSearchInput');
-    const clearBtn = document.querySelector('.btn-clear-search');
-
-    if (input) {
-        input.value = '';
-        filterLayers('');
-    }
-    if (clearBtn) {
-        clearBtn.style.display = 'none';
-    }
-}
-window.clearLayerSearch = clearLayerSearch;
-
 
 searchBtn.addEventListener('click', async () => {
     const addr = searchAddressInput.value.trim();
@@ -3420,51 +3397,6 @@ window.renameLayer = function (id) {
             updateLabels();
             if (typeof updateFeatureTable === 'function') updateFeatureTable();
         }
-    }
-};
-
-window.deleteLayer = function (id) {
-    let layerToDelete = drawnItems.getLayer(id);
-
-    if (!layerToDelete && typeof markerClusterGroup !== 'undefined') {
-        layerToDelete = markerClusterGroup.getLayer(id);
-    }
-
-    // 扩展搜索 GroupManager
-    if (!layerToDelete && typeof markerGroupManager !== 'undefined' && markerGroupManager) {
-        markerGroupManager.groups.forEach(group => {
-            if (layerToDelete) return;
-            const found = group.markers.find(m => L.stamp(m) == id);
-            if (found) layerToDelete = found;
-        });
-    }
-
-    if (layerToDelete) {
-        // 从所有可能的容器中移除
-        if (drawnItems.hasLayer(layerToDelete)) {
-            drawnItems.removeLayer(layerToDelete);
-        }
-        if (typeof markerClusterGroup !== 'undefined' && markerClusterGroup.hasLayer(layerToDelete)) {
-            markerClusterGroup.removeLayer(layerToDelete);
-        }
-        if (typeof markerGroupManager !== 'undefined' && markerGroupManager) {
-            markerGroupManager.removeMarker(layerToDelete);
-        }
-        // 从地图移除 (防漏)
-        if (map.hasLayer(layerToDelete)) {
-            map.removeLayer(layerToDelete);
-        }
-
-        updateLayerList();
-        // 更新表格和看板
-        if (typeof updateFeatureTable === 'function') {
-            updateFeatureTable();
-        }
-        if (typeof updateDashboard === 'function') {
-            updateDashboard();
-        }
-    } else {
-        console.error('Layer not found for deletion:', id);
     }
 };
 
@@ -5015,8 +4947,8 @@ function filterLayerMarkers(query) {
     displayMatches.forEach((match, index) => {
         html += `
             <div class="search-result-item" onclick="locateSearchResult(${index})">
-                <span class="result-name">${match.name}</span>
-                <span class="result-type">${match.type}</span>
+                <span class="result-name">${escapeHtml(String(match.name))}</span>
+                <span class="result-type">${escapeHtml(String(match.type))}</span>
             </div>
         `;
     });
@@ -5048,9 +4980,14 @@ function locateSearchResult(index) {
 function clearLayerSearch() {
     const input = document.getElementById('layerSearchInput');
     const resultsContainer = document.getElementById('searchResultsContainer');
+    const clearBtn = document.querySelector('.btn-clear-search');
 
-    if (input) input.value = '';
+    if (input) {
+        input.value = '';
+        filterLayers('');
+    }
     if (resultsContainer) resultsContainer.style.display = 'none';
+    if (clearBtn) clearBtn.style.display = 'none';
     window._searchResults = null;
 }
 
@@ -5101,32 +5038,6 @@ setTimeout(() => {
 
 
 
-// ==== Tools Menu Toggle ==== //
-function toggleToolsMenu() {
-    const menu = document.getElementById('toolsMenu');
-    if (menu) {
-        menu.classList.toggle('open');
-    }
-}
-
-function closeToolsMenu() {
-    const menu = document.getElementById('toolsMenu');
-    if (menu) {
-        menu.classList.remove('open');
-    }
-}
-
-window.toggleToolsMenu = toggleToolsMenu;
-window.closeToolsMenu = closeToolsMenu;
-
-// 点击外部关闭工具菜单
-document.addEventListener('click', (e) => {
-    const container = document.querySelector('.tools-fab-container');
-    if (container && !container.contains(e.target)) {
-        closeToolsMenu();
-    }
-});
-
 // ==== UI Collapsed State Management ==== //
 function updateUICollapsedState() {
     const controls = document.getElementById('controls');
@@ -5142,47 +5053,9 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('[UI] Script loaded and DOM ready');
 
     // Force bind map controls toggle
-    const toggleBtn = document.getElementById('toggleToolbarBtn');
+    const toggleBtn = document.getElementById('btn-map-control-collapse');
     if (toggleBtn) {
-        // Remove existing listeners by cloning (optional, but cleaner)
-        // const newBtn = toggleBtn.cloneNode(true);
-        // toggleBtn.parentNode.replaceChild(newBtn, toggleBtn);
-        // Note: cloning removes inline onclick too, which might be good if inline is broken
-        // But for now, just add listener as backup
-        toggleBtn.addEventListener('click', (e) => {
-            console.log('[UI] Toggle Toolbar clicked (via Listener)');
-            // Prevent doubletoggle if inline also works
-            // But toggleControlsPanel checks state, so it might just toggle back?
-            // Actually classList.toggle is relative. If called twice, it flips back.
-            // Using a flag or check?
-            // Better: relying on ONE method.
-            // Since we added inline onclick, let's just log here or do nothing if inline works.
-            // But if inline fails (scope), this listener is the savior.
-            // Let's check if the inline function is defined.
-        });
-    }
-
-    // Force bind show layer panel button
-    const layerBtn = document.getElementById('toggleLayerPanelBtn');
-    if (layerBtn) {
-        layerBtn.addEventListener('click', () => {
-            console.log('[UI] Toggle Layer Panel clicked (via Listener)');
-            if (typeof toggleLayerPanel === 'function') {
-                // toggleLayerPanel(); // Don't call if inline works!
-                // Risk of double toggle.
-            }
-        });
-    }
-
-    // Force bind clear all button
-    const clearBtn = document.getElementById('clearAllLayersBtn');
-    if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            console.log('[UI] Clear All clicked (via Listener)');
-            if (typeof clearAllLayersWithConfirm === 'function') {
-                // clearAllLayersWithConfirm();
-            }
-        });
+        toggleBtn.addEventListener('click', toggleControlsPanel);
     }
 });
 
@@ -5250,7 +5123,7 @@ function collectAllMarkersData() {
         return headers.map(h => {
             if (h === 'Latitude') return latlng.lat;
             if (h === 'Longitude') return latlng.lng;
-            return props[h] !== undefined ? props[h] : '';
+            return props[h] !== undefined ? sanitizeSpreadsheetCell(props[h]) : '';
         });
     });
 
@@ -5270,7 +5143,7 @@ function exportToCSV() {
 
     // 构建 CSV 内容
     const csvContent = [
-        headers.join(','),
+        headers.map(sanitizeSpreadsheetCell).join(','),
         ...rows.map(row => row.map(cell => {
             // 处理包含逗号或引号的单元格
             if (typeof cell === 'string' && (cell.includes(',') || cell.includes('"') || cell.includes('\n'))) {
@@ -5359,6 +5232,12 @@ function escapeHtml(text) {
         "'": '&#039;'
     };
     return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+/** Prevent CSV/Excel applications from evaluating imported values as formulas. */
+function sanitizeSpreadsheetCell(value) {
+    const text = String(value ?? '');
+    return /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
 }
 
 // ==== 分享地图截图模块 (Optimized Pure-Map Screenshot) ==== //
@@ -5533,13 +5412,11 @@ window.shareMap = shareMap;
 
 /**
  * 将当前地图所有标记数据序列化为 GeoJSON，然后：
- * 1. 通过 fetch 获取空白模板 `地图编辑器-空白版.html`
+ * 1. 获取与当前 Full/Lite 版本匹配的、已完全内联的发布模板
  * 2. 将数据注入为 window.__PRELOADED_DATA__ 脚本块
  * 3. 下载生成的 HTML 文件
  *
- * NOTE: 此功能依赖本地 HTTP 服务器提供模板文件。
- *       若服务器未运行，请先执行 `python build-single.py` 生成空白版模板，
- *       然后通过 `python server.py` 启动服务器后使用此功能。
+ * NOTE: Pages 发布物由 `npm run build:release` 生成，并放在 downloads/ 下。
  */
 async function exportAsSinglePage() {
     const btn = document.getElementById('exportSinglePageBtn');
@@ -5574,8 +5451,9 @@ async function exportAsSinglePage() {
     }
 
     try {
-        // 尝试获取空白模板
-        const templateUrl = '地图编辑器-空白版.html';
+        // 获取与当前能力集一致的完全离线模板。
+        const variant = window.GEOMAP_VARIANT === 'lite' ? 'lite' : 'full';
+        const templateUrl = `downloads/geomap-${variant}.html`;
         let templateHtml;
 
         try {
@@ -5583,12 +5461,12 @@ async function exportAsSinglePage() {
             if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
             templateHtml = await resp.text();
         } catch (fetchErr) {
-            // 模板不存在，提示用户先生成
+            // 开发服务器不会默认提供 release/，给出可执行的构建提示。
             showToast(
-                '❌ 找不到空白模板文件。\n\n' +
+                '❌ 找不到离线单文件模板。\n\n' +
                 '请先在项目目录运行：\n' +
-                '  python build-single.py\n\n' +
-                '生成 "地图编辑器-空白版.html" 后再使用此功能。'
+                '  npm run build:release\n\n' +
+                '然后从 dist/ 启动预览，或直接使用 release/ 中的 Full/Lite 文件。'
             );
             return;
         }

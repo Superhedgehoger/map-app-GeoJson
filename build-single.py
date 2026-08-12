@@ -148,7 +148,7 @@ def build_single_html(geojson_path=None, output_name=None, variant='full'):
     # 移除本地 CSS link 标签，内联样式
     for css_file in CSS_FILES:
         html = re.sub(
-            rf'<link\s+rel="stylesheet"\s+href="{re.escape(css_file)}"\s*/?>',
+            rf'<link\b(?=[^>]*rel="stylesheet")(?=[^>]*href="/?{re.escape(css_file)}")[^>]*>',
             '',
             html
         )
@@ -158,7 +158,7 @@ def build_single_html(geojson_path=None, output_name=None, variant='full'):
     # 移除本地 JS script 标签
     for js_file in JS_FILES:
         html = re.sub(
-            rf'<script\s+src="{re.escape(js_file)}"\s*>\s*</script>',
+            rf'<script\b(?=[^>]*src="/?{re.escape(js_file)}")[^>]*>\s*</script>',
             '',
             html
         )
