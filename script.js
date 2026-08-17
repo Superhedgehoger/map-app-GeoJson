@@ -5588,10 +5588,13 @@ function getDecisionMarkers() {
     return markers;
 }
 
-function applyDecisionLocationFilter(filter = {}) {
-    const query = String(filter.query || '').trim().toLowerCase();
-    const region = String(filter.region || 'all');
-    const status = String(filter.status || 'all');
+let currentDecisionLocationFilter = {};
+let currentHistoricalLocationState = null;
+
+function refreshDecisionMarkerVisibility() {
+    const query = String(currentDecisionLocationFilter.query || '').trim().toLowerCase();
+    const region = String(currentDecisionLocationFilter.region || 'all');
+    const status = String(currentDecisionLocationFilter.status || 'all');
     const normalizeStatus = value => ({
         '计划': 'planned',
         '规划': 'planned',
@@ -5607,13 +5610,17 @@ function applyDecisionLocationFilter(filter = {}) {
 
     getDecisionMarkers().forEach(marker => {
         const props = marker.feature?.properties || {};
+        const locationId = String(props.locationId || props.storeId || props.门店编号 || props.门店ID || marker.feature?.id || '');
         const name = String(props.name || props.名称 || props.门店 || '');
         const markerRegion = String(props.region || props.区域 || props.城市 || props.city || '');
         const kind = String(props.locationType || props.entityType || props.位置类型 || '').toLowerCase();
-        const markerStatus = normalizeStatus(String(props.status || props.state || props.状态 || (kind === 'candidate' ? 'planned' : 'open')).toLowerCase());
+        const originalStatus = normalizeStatus(String(props.status || props.state || props.状态 || (kind === 'candidate' ? 'planned' : 'open')).toLowerCase());
+        const markerStatus = currentHistoricalLocationState?.statusById?.[locationId] || originalStatus;
+        const matchesHistory = !currentHistoricalLocationState || currentHistoricalLocationState.locationIds.has(locationId);
         const matches = (!query || `${name} ${markerRegion} ${props.address || props.地址 || ''}`.toLowerCase().includes(query))
             && (region === 'all' || markerRegion === region)
-            && (status === 'all' || markerStatus === status);
+            && (status === 'all' || markerStatus === status)
+            && matchesHistory;
 
         if (marker._decisionOriginalOpacity === undefined) {
             marker._decisionOriginalOpacity = marker.options.opacity ?? 1;
@@ -5622,6 +5629,19 @@ function applyDecisionLocationFilter(filter = {}) {
         const element = marker.getElement();
         if (element) element.style.pointerEvents = matches ? '' : 'none';
     });
+}
+
+function applyDecisionLocationFilter(filter = {}) {
+    currentDecisionLocationFilter = { ...filter };
+    refreshDecisionMarkerVisibility();
+}
+
+function applyDecisionHistoricalState(state) {
+    currentHistoricalLocationState = state ? {
+        locationIds: new Set(state.locationIds || []),
+        statusById: { ...(state.statusById || {}) }
+    } : null;
+    refreshDecisionMarkerVisibility();
 }
 
 function focusDecisionLocation(name) {
@@ -5638,6 +5658,7 @@ function focusDecisionLocation(name) {
 window.GeomapLegacyBridge = Object.freeze({
     getFeatureCollection: collectDecisionFeatureCollection,
     applyLocationFilter: applyDecisionLocationFilter,
+    applyHistoricalState: applyDecisionHistoricalState,
     focusLocation: focusDecisionLocation
 });
 

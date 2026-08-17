@@ -84,6 +84,8 @@ function migrateV1Workspace(value: Partial<WorkspaceStateV1>): WorkspaceState {
 function normalizeV2Workspace(value: Partial<WorkspaceState>): WorkspaceState {
   const empty = createEmptyWorkspace(value.updatedAt);
   const features = Array.isArray(value.features) ? structuredClone(value.features) : [];
+  const array = <T>(candidate: T[] | undefined): T[] =>
+    Array.isArray(candidate) ? structuredClone(candidate) : [];
   return {
     ...empty,
     ...structuredClone(value),
@@ -91,7 +93,22 @@ function normalizeV2Workspace(value: Partial<WorkspaceState>): WorkspaceState {
     features,
     locations: Array.isArray(value.locations)
       ? structuredClone(value.locations)
-      : deriveLocationsFromFeatures(features)
+      : deriveLocationsFromFeatures(features),
+    areas: array(value.areas),
+    records: array(value.records),
+    eventSeries: array(value.eventSeries),
+    selectionModels: array(value.selectionModels),
+    selectionScenarios: array(value.selectionScenarios),
+    decisions: array(value.decisions),
+    savedViews: array(value.savedViews),
+    dataSources: array(value.dataSources),
+    audit: array(value.audit),
+    groups: array(value.groups),
+    snapshots: array(value.snapshots),
+    legacy:
+      value.legacy && typeof value.legacy === 'object' && !Array.isArray(value.legacy)
+        ? structuredClone(value.legacy)
+        : {}
   } as WorkspaceState;
 }
 

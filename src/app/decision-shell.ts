@@ -2,7 +2,7 @@ import type { GeomapFeatureStore } from '../store/feature-store';
 import type { LocationEntity, LocationStatus } from '../types';
 
 type ShellMode = 'view' | 'edit';
-type ShellSection = 'overview' | 'network';
+type ShellSection = 'overview' | 'network' | 'history';
 
 const STATUS_LABELS: Record<LocationStatus, string> = {
   planned: '计划',
@@ -29,6 +29,7 @@ function formatUpdatedAt(value: string): string {
 
 export class DecisionShell {
   readonly #store: GeomapFeatureStore;
+  readonly #historyEnabled: boolean;
   #mode: ShellMode = 'view';
   #section: ShellSection = 'overview';
   #query = '';
@@ -36,9 +37,11 @@ export class DecisionShell {
   #status = 'all';
   #root: HTMLElement | null = null;
   #insights: HTMLElement | null = null;
+  #historicalLocations: LocationEntity[] | null = null;
 
-  constructor(store: GeomapFeatureStore) {
+  constructor(store: GeomapFeatureStore, historyEnabled = true) {
     this.#store = store;
+    this.#historyEnabled = historyEnabled;
   }
 
   mount(): void {
@@ -60,13 +63,19 @@ export class DecisionShell {
     this.#applyMode();
     this.#render();
     this.#store.subscribe(() => this.#render());
+    window.addEventListener('geomap:history-state-changed', (event) => {
+      const detail = (event as CustomEvent<{ locations?: LocationEntity[] | null }>).detail;
+      this.#historicalLocations = detail?.locations ? structuredClone(detail.locations) : null;
+      this.#render();
+    });
     window.addEventListener('resize', () => window.dispatchEvent(new Event('geomap:layout')));
     window.setTimeout(() => window.dispatchEvent(new Event('resize')), 0);
   }
 
   #filteredLocations(): LocationEntity[] {
     const query = this.#query.trim().toLowerCase();
-    return this.#store.getState().locations.filter((location) => {
+    const source = this.#historicalLocations ?? this.#store.getState().locations;
+    return source.filter((location) => {
       const matchesQuery =
         !query ||
         `${location.name} ${location.address ?? ''} ${location.region ?? ''}`
@@ -84,8 +93,9 @@ export class DecisionShell {
     if (!this.#root || !this.#insights) return;
     const state = this.#store.getState();
     const locations = this.#filteredLocations();
+    const sourceLocations = this.#historicalLocations ?? state.locations;
     const allRegions = [
-      ...new Set(state.locations.map((item) => item.region).filter(Boolean))
+      ...new Set(sourceLocations.map((item) => item.region).filter(Boolean))
     ].sort();
     const openCount = locations.filter((item) => item.status === 'open').length;
     const candidateCount = locations.filter(
@@ -101,7 +111,11 @@ export class DecisionShell {
         <nav class="decision-nav" aria-label="主要功能">
           ${button('总览', { active: this.#section === 'overview', section: 'overview' })}
           ${button('门店网络', { active: this.#section === 'network', section: 'network' })}
-          ${button('经营时间', { disabled: true })}
+          ${button('经营时间', {
+            active: this.#section === 'history',
+            disabled: !this.#historyEnabled,
+            section: this.#historyEnabled ? 'history' : undefined
+          })}
           ${button('选址模型', { disabled: true })}
           ${button('数据中心', { disabled: true })}
         </nav>
@@ -141,15 +155,15 @@ export class DecisionShell {
       .slice(0, 4);
     const missingRegion = locations.filter((item) => !item.region).length;
     this.#insights.innerHTML = `
-      <div class="decision-insights-header"><div><span>${this.#section === 'overview' ? '经营总览' : '门店网络'}</span><strong>${locations.length} 个位置</strong></div><span class="decision-mode-tag">${this.#mode === 'view' ? '查看模式' : '编辑模式'}</span></div>
+      <div class="decision-insights-header"><div><span>${this.#section === 'overview' ? '经营总览' : this.#section === 'network' ? '门店网络' : '历史状态'}</span><strong>${locations.length} 个位置</strong></div><span class="decision-mode-tag">${this.#section === 'history' ? '时间上下文' : this.#mode === 'view' ? '查看模式' : '编辑模式'}</span></div>
       <section><h2>区域分布</h2>${regionSummary.length ? regionSummary.map((item) => `<button type="button" data-region="${this.#escapeAttribute(item.region)}"><span>${item.region}</span><strong>${item.count}</strong></button>`).join('') : '<p>暂无区域字段</p>'}</section>
-      <section><h2>数据提示</h2><p>${missingRegion > 0 ? `${missingRegion} 个位置缺少区域，请在数据中心补充。` : '区域字段完整，可用于管理筛选。'}</p><p>经营指标和时间事件将在 v3.2 接入。</p></section>
+      <section><h2>数据提示</h2><p>${missingRegion > 0 ? `${missingRegion} 个位置缺少区域，请在数据中心补充。` : '区域字段完整，可用于管理筛选。'}</p><p>${this.#section === 'history' ? '地图与指标已使用底部时间轴的同一历史状态。' : '进入经营时间可回放事件并比较两个时间点。'}</p></section>
       <section><h2>位置列表</h2><div class="decision-location-list">${
         locations
           .slice(0, 6)
           .map(
             (item) =>
-              `<button type="button" data-location="${this.#escapeAttribute(item.name)}"><span><strong>${item.name}</strong><small>${item.region ?? '未分区'}</small></span><em data-status="${item.status}">${STATUS_LABELS[item.status]}</em></button>`
+              `<div class="decision-location-row"><button type="button" data-location="${this.#escapeAttribute(item.name)}"><span><strong>${this.#escapeAttribute(item.name)}</strong><small>${this.#escapeAttribute(item.region ?? '未分区')}</small></span><em data-status="${item.status}">${STATUS_LABELS[item.status]}</em></button>${this.#section === 'history' ? `<button type="button" class="decision-add-record" data-add-record="${this.#escapeAttribute(item.locationId)}" aria-label="为${this.#escapeAttribute(item.name)}新增记录">+记录</button>` : ''}</div>`
           )
           .join('') || '<p>当前筛选无结果</p>'
       }</div></section>`;
@@ -160,8 +174,16 @@ export class DecisionShell {
   #bindEvents(): void {
     this.#root?.querySelectorAll<HTMLButtonElement>('[data-section]').forEach((item) => {
       item.addEventListener('click', () => {
-        this.#section = item.dataset.section === 'network' ? 'network' : 'overview';
+        this.#section =
+          item.dataset.section === 'network'
+            ? 'network'
+            : item.dataset.section === 'history'
+              ? 'history'
+              : 'overview';
         this.#render();
+        window.dispatchEvent(
+          new CustomEvent('geomap:section-changed', { detail: { section: this.#section } })
+        );
       });
     });
     this.#root?.querySelector('#decisionModeBtn')?.addEventListener('click', () => {
@@ -205,6 +227,15 @@ export class DecisionShell {
     this.#insights?.querySelectorAll<HTMLButtonElement>('[data-location]').forEach((item) => {
       item.addEventListener('click', () => {
         window.GeomapLegacyBridge?.focusLocation(item.dataset.location ?? '');
+      });
+    });
+    this.#insights?.querySelectorAll<HTMLButtonElement>('[data-add-record]').forEach((item) => {
+      item.addEventListener('click', () => {
+        window.dispatchEvent(
+          new CustomEvent('geomap:add-record', {
+            detail: { locationId: item.dataset.addRecord ?? '' }
+          })
+        );
       });
     });
   }

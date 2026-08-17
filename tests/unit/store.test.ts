@@ -21,5 +21,7 @@ describe('FeatureStore', () => {
     expect(store.removeFeature('a')).toBe(true);
     expect(store.getState().locations).toHaveLength(0);
     expect(store.removeFeature('missing')).toBe(false);
+    store.setSavedViews([{ viewId: 'history-1', kind: 'history' }]);
+    expect(store.getState().savedViews).toEqual([{ viewId: 'history-1', kind: 'history' }]);
   });
 });

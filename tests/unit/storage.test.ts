@@ -78,4 +78,20 @@ describe('workspace migration', () => {
     expect(migrated.schemaVersion).toBe(2);
     expect(migrated.audit).toHaveLength(1);
   });
+
+  it('normalizes missing or malformed v2 collection fields', () => {
+    const storage = memoryStorage({
+      [WORKSPACE_STORAGE_KEY]: JSON.stringify({
+        schemaVersion: 2,
+        updatedAt: '2026-01-01T00:00:00.000Z',
+        features: [],
+        records: null,
+        savedViews: 'invalid'
+      })
+    });
+    const state = loadWorkspace(storage);
+    expect(state.records).toEqual([]);
+    expect(state.savedViews).toEqual([]);
+    expect(state.selectionModels).toEqual([]);
+  });
 });

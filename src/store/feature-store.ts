@@ -1,4 +1,11 @@
-import type { FeatureStore, GeoJsonFeature, StoreListener, WorkspaceState } from '../types';
+import type {
+  BusinessRecord,
+  FeatureStore,
+  GeoJsonFeature,
+  JsonValue,
+  StoreListener,
+  WorkspaceState
+} from '../types';
 import { deriveLocationsFromFeatures } from '../domain/locations';
 
 function clone<T>(value: T): T {
@@ -44,6 +51,23 @@ export class GeomapFeatureStore implements FeatureStore {
     this.#state.locations = deriveLocationsFromFeatures(this.#state.features);
     this.#touch();
     return true;
+  }
+
+  setRecords(records: readonly BusinessRecord[]): void {
+    this.#state.records = clone([...records]);
+    this.#touch();
+  }
+
+  upsertRecord(record: BusinessRecord): void {
+    const index = this.#state.records.findIndex((item) => item.recordId === record.recordId);
+    if (index === -1) this.#state.records.push(clone(record));
+    else this.#state.records[index] = clone(record);
+    this.#touch();
+  }
+
+  setSavedViews(savedViews: readonly JsonValue[]): void {
+    this.#state.savedViews = clone([...savedViews]);
+    this.#touch();
   }
 
   subscribe(listener: StoreListener): () => void {
