@@ -42,7 +42,9 @@ export class DecisionShell {
   #insights: HTMLElement | null = null;
   #returnButton: HTMLButtonElement | null = null;
   #revealButton: HTMLButtonElement | null = null;
+  #insightsRevealButton: HTMLButtonElement | null = null;
   #shellCollapsed = false;
+  #insightsCollapsed = false;
   #historicalLocations: LocationEntity[] | null = null;
 
   constructor(
@@ -63,6 +65,7 @@ export class DecisionShell {
     if (document.getElementById('decisionShell')) return;
     this.#mode = sessionStorage.getItem('geomap.shell.mode') === 'edit' ? 'edit' : 'view';
     this.#shellCollapsed = sessionStorage.getItem('geomap.shell.collapsed') === 'true';
+    this.#insightsCollapsed = sessionStorage.getItem('geomap.insights.collapsed') === 'true';
     this.#root = document.createElement('header');
     this.#root.id = 'decisionShell';
     this.#root.className = 'decision-shell';
@@ -92,9 +95,19 @@ export class DecisionShell {
     this.#revealButton.addEventListener('click', () => this.#setShellCollapsed(false));
     document.body.append(this.#revealButton);
 
+    this.#insightsRevealButton = document.createElement('button');
+    this.#insightsRevealButton.id = 'decisionInsightsRevealBtn';
+    this.#insightsRevealButton.className = 'decision-insights-reveal-btn';
+    this.#insightsRevealButton.type = 'button';
+    this.#insightsRevealButton.innerHTML =
+      '<i class="fa-solid fa-chart-pie"></i><span>显示经营总览</span>';
+    this.#insightsRevealButton.addEventListener('click', () => this.#setInsightsCollapsed(false));
+    document.body.append(this.#insightsRevealButton);
+
     document.body.classList.add('decision-shell-enabled');
     this.#applyMode();
     this.#applyShellVisibility();
+    this.#applyInsightsVisibility();
     this.#render();
     this.#store.subscribe(() => this.#render());
     window.addEventListener('geomap:history-state-changed', (event) => {
@@ -203,7 +216,7 @@ export class DecisionShell {
       .slice(0, 4);
     const missingRegion = locations.filter((item) => !item.region).length;
     this.#insights.innerHTML = `
-      <div class="decision-insights-header"><div><span>${this.#section === 'overview' ? '经营总览' : this.#section === 'network' ? '门店网络' : this.#section === 'history' ? '历史状态' : this.#section === 'selection' ? '选址模型' : this.#section === 'collaboration' ? '企业协作' : '经营数据'}</span><strong>${locations.length} 个位置</strong></div><span class="decision-mode-tag">${this.#section === 'history' ? '时间上下文' : this.#section === 'selection' ? '模型情景' : this.#section === 'data' ? '指标口径' : this.#section === 'collaboration' ? '私有空间' : this.#mode === 'view' ? '查看模式' : '编辑模式'}</span></div>
+      <div class="decision-insights-header"><div><span>${this.#section === 'overview' ? '经营总览' : this.#section === 'network' ? '门店网络' : this.#section === 'history' ? '历史状态' : this.#section === 'selection' ? '选址模型' : this.#section === 'collaboration' ? '企业协作' : '经营数据'}</span><strong>${locations.length} 个位置</strong></div><span class="decision-mode-tag">${this.#section === 'history' ? '时间上下文' : this.#section === 'selection' ? '模型情景' : this.#section === 'data' ? '指标口径' : this.#section === 'collaboration' ? '私有空间' : this.#mode === 'view' ? '查看模式' : '编辑模式'}</span><button id="decisionInsightsHideBtn" class="decision-insights-hide-btn" type="button" aria-label="隐藏经营总览" title="隐藏经营总览"><i class="fa-solid fa-chevron-right"></i></button></div>
       <section><h2>区域分布</h2>${regionSummary.length ? regionSummary.map((item) => `<button type="button" data-region="${this.#escapeAttribute(item.region)}"><span>${item.region}</span><strong>${item.count}</strong></button>`).join('') : '<p>暂无区域字段</p>'}</section>
       <section><h2>数据提示</h2><p>${missingRegion > 0 ? `${missingRegion} 个位置缺少区域，请在数据中心补充。` : '区域字段完整，可用于管理筛选。'}</p><p>${this.#section === 'history' ? '地图与指标已使用底部时间轴的同一历史状态。' : '进入经营时间可回放事件并比较两个时间点。'}</p></section>
       <section><h2>位置列表</h2><div class="decision-location-list">${
@@ -220,6 +233,9 @@ export class DecisionShell {
   }
 
   #bindEvents(): void {
+    this.#insights?.querySelector('#decisionInsightsHideBtn')?.addEventListener('click', () => {
+      this.#setInsightsCollapsed(true);
+    });
     this.#root?.querySelectorAll<HTMLButtonElement>('[data-section]').forEach((item) => {
       item.addEventListener('click', () => {
         this.#section =
@@ -316,6 +332,17 @@ export class DecisionShell {
     this.#shellCollapsed = collapsed;
     sessionStorage.setItem('geomap.shell.collapsed', String(collapsed));
     this.#applyShellVisibility();
+    window.setTimeout(() => window.dispatchEvent(new Event('resize')), 0);
+  }
+
+  #applyInsightsVisibility(): void {
+    document.body.classList.toggle('decision-insights-collapsed', this.#insightsCollapsed);
+  }
+
+  #setInsightsCollapsed(collapsed: boolean): void {
+    this.#insightsCollapsed = collapsed;
+    sessionStorage.setItem('geomap.insights.collapsed', String(collapsed));
+    this.#applyInsightsVisibility();
     window.setTimeout(() => window.dispatchEvent(new Event('resize')), 0);
   }
 
