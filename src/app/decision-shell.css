@@ -222,6 +222,50 @@ body.decision-shell-enabled #layerPanel {
   max-height: calc(100vh - var(--decision-shell-height) - 28px);
 }
 
+/* 编辑态回到原地图编辑器：地图全屏，使用旧版悬浮工具与图层视觉。 */
+body.decision-edit-mode .decision-shell {
+  display: none;
+}
+
+body.decision-edit-mode #map {
+  top: 0;
+}
+
+body.decision-edit-mode #controls,
+body.decision-edit-mode #layerPanel {
+  top: 16px;
+  max-height: calc(100vh - 32px);
+}
+
+.decision-return-btn {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1700;
+  display: none;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 13px;
+  color: var(--text-primary);
+  font: inherit;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass-highlight);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-float);
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+}
+
+body.decision-edit-mode .decision-return-btn {
+  display: inline-flex;
+}
+
+.decision-return-btn:hover {
+  color: white;
+  background: var(--primary-color);
+}
+
 body.decision-view-mode #controls,
 body.decision-view-mode #layerPanel,
 body.decision-view-mode .tools-fab-container,

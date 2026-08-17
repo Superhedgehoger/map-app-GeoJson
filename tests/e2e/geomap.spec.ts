@@ -21,14 +21,21 @@ test('Full opens in decision view and keeps legacy editing available', async ({ 
   await page.goto('/');
   await expect(page.locator('html')).toHaveAttribute('data-geomap-core', 'v3');
   await expect(page.locator('#decisionShell')).toBeVisible();
+  await expect(page.locator('#decisionModeBtn')).toContainText('开始使用');
   await expect(page.locator('.decision-kpis article').first().locator('strong')).toHaveText('12');
   await expect(page.locator('.layer-item').first()).toBeAttached({ timeout: 15_000 });
   await expect(page.locator('#controls')).toBeHidden();
   await page.locator('#decisionModeBtn').click();
+  await expect(page.locator('#decisionShell')).toBeHidden();
+  await expect(page.locator('#decisionReturnBtn')).toBeVisible();
   await expect(page.locator('#controls')).toBeVisible();
+  await expect(page.locator('#controls')).toHaveCSS('top', '16px');
   await page.locator('#btn-show-layer-panel').click();
   await expect(page.locator('#layerPanel')).toHaveClass(/open/);
   await expect(page.locator('.layer-item').first()).toBeVisible();
+  await page.locator('#decisionReturnBtn').click();
+  await expect(page.locator('#decisionShell')).toBeVisible();
+  await expect(page.locator('#controls')).toBeHidden();
   expect(errors).toEqual([]);
 });
 

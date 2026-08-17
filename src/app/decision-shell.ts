@@ -40,6 +40,7 @@ export class DecisionShell {
   #status = 'all';
   #root: HTMLElement | null = null;
   #insights: HTMLElement | null = null;
+  #returnButton: HTMLButtonElement | null = null;
   #historicalLocations: LocationEntity[] | null = null;
 
   constructor(
@@ -70,6 +71,15 @@ export class DecisionShell {
     this.#insights.className = 'decision-insights';
     this.#insights.setAttribute('aria-label', '门店网络洞察');
     document.body.append(this.#insights);
+
+    this.#returnButton = document.createElement('button');
+    this.#returnButton.id = 'decisionReturnBtn';
+    this.#returnButton.className = 'decision-return-btn';
+    this.#returnButton.type = 'button';
+    this.#returnButton.innerHTML =
+      '<i class="fa-solid fa-arrow-left"></i><span>返回决策首页</span>';
+    this.#returnButton.addEventListener('click', () => this.#setMode('view'));
+    document.body.append(this.#returnButton);
 
     document.body.classList.add('decision-shell-enabled');
     this.#applyMode();
@@ -146,7 +156,7 @@ export class DecisionShell {
         </nav>
         <div class="decision-shell-actions">
           <span class="decision-freshness">${formatUpdatedAt(state.updatedAt)}</span>
-          <button id="decisionModeBtn" class="decision-mode-btn" type="button"><i class="fa-solid ${this.#mode === 'view' ? 'fa-pen-to-square' : 'fa-eye'}"></i>${this.#mode === 'view' ? '进入编辑' : '返回查看'}</button>
+          <button id="decisionModeBtn" class="decision-mode-btn" type="button"><i class="fa-solid fa-arrow-right"></i>开始使用</button>
         </div>
       </div>
       <div class="decision-shell-dashboard">
@@ -218,11 +228,7 @@ export class DecisionShell {
       });
     });
     this.#root?.querySelector('#decisionModeBtn')?.addEventListener('click', () => {
-      this.#mode = this.#mode === 'view' ? 'edit' : 'view';
-      sessionStorage.setItem('geomap.shell.mode', this.#mode);
-      this.#applyMode();
-      this.#render();
-      window.setTimeout(() => window.dispatchEvent(new Event('resize')), 0);
+      this.#setMode('edit');
     });
     this.#root
       ?.querySelector<HTMLInputElement>('#decisionSearch')
@@ -284,6 +290,20 @@ export class DecisionShell {
   #applyMode(): void {
     document.body.classList.toggle('decision-view-mode', this.#mode === 'view');
     document.body.classList.toggle('decision-edit-mode', this.#mode === 'edit');
+  }
+
+  #setMode(mode: ShellMode): void {
+    this.#mode = mode;
+    sessionStorage.setItem('geomap.shell.mode', this.#mode);
+    if (mode === 'edit') {
+      this.#section = 'network';
+      window.dispatchEvent(
+        new CustomEvent('geomap:section-changed', { detail: { section: 'network' } })
+      );
+    }
+    this.#applyMode();
+    this.#render();
+    window.setTimeout(() => window.dispatchEvent(new Event('resize')), 0);
   }
 
   #escapeAttribute(value: string): string {
