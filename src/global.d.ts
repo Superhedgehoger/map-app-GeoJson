@@ -5,6 +5,7 @@ import type { GeomapMetricStore } from './store/metric-store';
 import type { exportGeoJson, importGeoJson, toSafeSpreadsheetRows } from './io/geojson';
 import type { neutralizeSpreadsheetFormula, sanitizeHtml, sanitizeUrl } from './security';
 import type { AppConfig, GeoJsonFeatureCollection, GeomapVariant } from './types';
+import type { CollaborationApiClient } from './collaboration/api-client';
 
 declare global {
   interface Window {
@@ -18,6 +19,7 @@ declare global {
       };
     };
     GEOMAP_VARIANT?: GeomapVariant;
+    GEOMAP_PRIVATE_API_URL?: string;
     GEOMAP_FEATURES?: Readonly<{ eventTracker: boolean }>;
     __PRELOADED_DATA__?: unknown;
     __PRELOADED_META__?: unknown;
@@ -38,6 +40,7 @@ declare global {
       recordStore: GeomapRecordStore;
       selectionStore: GeomapSelectionStore;
       metricStore: GeomapMetricStore;
+      collaborationClient: CollaborationApiClient | null;
       importGeoJson: typeof importGeoJson;
       exportGeoJson: typeof exportGeoJson;
       toSafeSpreadsheetRows: typeof toSafeSpreadsheetRows;

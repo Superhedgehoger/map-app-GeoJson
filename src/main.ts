@@ -3,10 +3,13 @@ import { DecisionShell } from './app/decision-shell';
 import { HistoryWorkspace } from './app/history-workspace';
 import { SelectionWorkspace } from './app/selection-workspace';
 import { DataWorkspace } from './app/data-workspace';
+import { CollaborationWorkspace } from './app/collaboration-workspace';
+import { CollaborationApiClient } from './collaboration/api-client';
 import './app/decision-shell.css';
 import './app/history-workspace.css';
 import './app/selection-workspace.css';
 import './app/data-workspace.css';
+import './app/collaboration-workspace.css';
 import { importGeoJson, exportGeoJson, toSafeSpreadsheetRows } from './io/geojson';
 import { sanitizeHtml, sanitizeUrl, neutralizeSpreadsheetFormula } from './security';
 import { GeomapFeatureStore } from './store/feature-store';
@@ -51,13 +54,19 @@ export function bootstrapApp(): void {
     return;
   }
 
-  const config = createAppConfig({ explicitVariant: window.GEOMAP_VARIANT });
+  const config = createAppConfig({
+    explicitVariant: window.GEOMAP_VARIANT,
+    privateApiUrl: window.GEOMAP_PRIVATE_API_URL
+  });
   const workspace = loadWorkspace(window.localStorage);
   const store = new GeomapFeatureStore(workspace);
   store.subscribe((nextState) => saveWorkspace(window.localStorage, nextState));
   const recordStore = new GeomapRecordStore(store, config.capabilities.eventTracker);
   const selectionStore = new GeomapSelectionStore(store);
   const metricStore = new GeomapMetricStore(store, recordStore);
+  const collaborationClient = config.privateApiUrl
+    ? new CollaborationApiClient(config.privateApiUrl)
+    : null;
 
   const syncFeatures = (value: unknown): void => {
     const result = importGeoJson(value, config.variant);
@@ -78,6 +87,7 @@ export function bootstrapApp(): void {
     recordStore,
     selectionStore,
     metricStore,
+    collaborationClient,
     importGeoJson,
     exportGeoJson,
     toSafeSpreadsheetRows,
@@ -99,11 +109,13 @@ export function bootstrapApp(): void {
     store,
     config.capabilities.eventTracker,
     config.capabilities.siteSelection,
-    config.capabilities.businessData
+    config.capabilities.businessData,
+    config.capabilities.privateCollaboration
   ).mount();
   new HistoryWorkspace(store, recordStore).mount();
   new SelectionWorkspace(store, selectionStore).mount();
   new DataWorkspace(store, metricStore).mount();
+  new CollaborationWorkspace(store, collaborationClient).mount();
 }
 
 bootstrapApp();

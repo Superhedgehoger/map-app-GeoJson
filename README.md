@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![Version](https://img.shields.io/badge/version-v3.4.0--beta.1-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v4.0.0--beta.1-blue.svg)](CHANGELOG.md)
 [![CI](https://github.com/Superhedgehoger/Geomap-app/actions/workflows/ci.yml/badge.svg)](https://github.com/Superhedgehoger/Geomap-app/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -30,6 +30,7 @@ Decision-oriented store-network workspace with private browser storage, map edit
 | 经营时间   | 时间回放、五类记录、批量指标、A/B 差异、专题线和复盘视图    |
 | 选址模型   | 四类模板、受限公式、版本发布、候选排行、贡献解释和决策报告  |
 | 经营数据   | CSV/Excel 映射、质量预览、指标口径、KPI、趋势、排行与异常   |
+| 私有协作   | 企业账号、角色权限、版本冲突、评论、只读分享、简报与审计    |
 | 数据洞察   | 虚拟化表格、实时统计看板、可配置标记弹窗                    |
 | 安全与隐私 | 数据保留在浏览器中，不上传；导入数据按不可信内容处理        |
 | 分发       | GitHub Pages、Full/Lite 共用源码、可生成真正自包含的单 HTML |
@@ -63,9 +64,21 @@ npm run build:release
 | 事件追踪器及事件字段         |  ✅  |        ❌        |
 | 自定义选址模型与决策情景     |  ✅  |        ❌        |
 | 经营指标导入、质量与分析     |  ✅  |        ✅        |
+| 私有服务连接与多人协作       |  ✅  |        ❌        |
 | 访问方式                     | `/`  | `/?variant=lite` |
 
 Lite 是公开能力配置，不维护第二套业务源码；事件数据在 Lite 的导入、显示和导出边界都会被移除。
+
+## v4 私有协作
+
+公开 Pages 和离线单文件始终是本地模式，不提供账号或云存储，请勿将真实经营数据发布到公开仓库。企业试点可另行启动私有服务：
+
+```bash
+cp server/.env.example .env
+npm run private:server
+```
+
+然后使用 `?privateApi=https://your-private-api.example.com` 连接。Full 版支持组织初始化、12 小时会话、viewer/editor/admin/owner 权限、带版本号保存、冲突阻止、实体评论与 @提醒、只读快照、决策简报、同步任务元数据和审计记录。生产部署必须使用 TLS、反向代理、独立备份和受控来源；完整说明见 [`updatedocs/V4_PRIVATE_DEPLOYMENT.md`](updatedocs/V4_PRIVATE_DEPLOYMENT.md)。
 
 ## 离线说明 · Offline behavior
 

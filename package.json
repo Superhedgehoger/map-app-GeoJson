@@ -1,6 +1,6 @@
 {
   "name": "geomap-app",
-  "version": "3.4.0-beta.1",
+  "version": "4.0.0-beta.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -16,14 +16,16 @@
     "capture:history": "node scripts/capture-history.mjs",
     "capture:selection": "node scripts/capture-selection.mjs",
     "capture:data": "node scripts/capture-data.mjs",
-    "format": "prettier --write src tests scripts *.json *.md",
-    "format:check": "prettier --check src tests scripts *.json *.md",
-    "lint": "eslint src tests scripts",
+    "format": "prettier --write src tests scripts server updatedocs/V4_PRIVATE_DEPLOYMENT.md *.json *.md",
+    "format:check": "prettier --check src tests scripts server updatedocs/V4_PRIVATE_DEPLOYMENT.md *.json *.md",
+    "lint": "eslint src tests scripts server",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:server": "node --test server/*.test.mjs",
+    "private:server": "node --env-file-if-exists=.env server/private-server.mjs",
     "pretest:e2e": "npm run build:standalone:all",
     "test:e2e": "playwright test",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && python3 -m unittest discover -s tests -v"
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run test:server && python3 -m unittest discover -s tests -v"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "6.4.0",

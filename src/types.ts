@@ -34,13 +34,66 @@ export type GeomapVariant = 'full' | 'lite';
 export interface AppConfig {
   variant: GeomapVariant;
   basePath: string;
+  privateApiUrl: string | null;
   capabilities: {
     eventTracker: boolean;
     siteSelection: boolean;
     businessData: boolean;
+    privateCollaboration: boolean;
     offlineEditing: boolean;
     fullMobileEditing: boolean;
   };
+}
+
+export type CollaborationRole = 'viewer' | 'editor' | 'admin' | 'owner';
+
+export interface CollaborationUser {
+  userId: string;
+  organizationId: string;
+  displayName: string;
+  email: string;
+  role: CollaborationRole;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface OrganizationBrand {
+  productName: string;
+  primaryColor: string;
+  logoUrl: string | null;
+}
+
+export interface CollaborationOrganization {
+  organizationId: string;
+  name: string;
+  brand: OrganizationBrand;
+  createdAt: string;
+}
+
+export interface RemoteWorkspaceSummary {
+  workspaceId: string;
+  organizationId: string;
+  name: string;
+  version: number;
+  updatedAt: string;
+  updatedBy: string;
+}
+
+export interface RemoteWorkspace extends RemoteWorkspaceSummary {
+  state: WorkspaceState | null;
+}
+
+export interface WorkspaceComment {
+  commentId: string;
+  workspaceId: string;
+  entityRef: string | null;
+  body: string;
+  authorId: string;
+  mentionUserIds: string[];
+  status: 'open' | 'resolved';
+  createdAt: string;
+  resolvedAt: string | null;
+  resolvedBy: string | null;
 }
 
 export interface MapViewState {

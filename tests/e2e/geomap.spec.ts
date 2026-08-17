@@ -191,6 +191,112 @@ test('data center previews quality and revises duplicate business observations',
   expect(errors).toEqual([]);
 });
 
+test('private collaboration authenticates, saves with versioning and exposes conflicts', async ({
+  page
+}) => {
+  const errors = await collectPageErrors(page);
+  let saveAttempts = 0;
+  const workspace: Record<string, unknown> = {
+    workspaceId: 'workspace-1',
+    organizationId: 'organization-1',
+    name: '经营决策工作区',
+    version: 1,
+    updatedAt: '2026-08-17T00:00:00.000Z',
+    updatedBy: 'owner-1',
+    state: null
+  };
+  await page.route('http://private.test/api/**', async (route) => {
+    const request = route.request();
+    const path = new URL(request.url()).pathname;
+    const fulfill = (value: unknown, status = 200) =>
+      route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(value) });
+    if (path === '/api/health') return fulfill({ ok: true, configured: true, schemaVersion: 1 });
+    if (path === '/api/sessions' && request.method() === 'POST')
+      return fulfill({
+        token: 'test-token',
+        expiresAt: '2026-08-18T00:00:00.000Z',
+        user: {
+          userId: 'owner-1',
+          organizationId: 'organization-1',
+          displayName: '管理员',
+          email: 'owner@example.com',
+          role: 'owner',
+          active: true,
+          createdAt: '2026-08-17T00:00:00.000Z'
+        }
+      });
+    if (path === '/api/me')
+      return fulfill({
+        user: {
+          userId: 'owner-1',
+          organizationId: 'organization-1',
+          displayName: '管理员',
+          email: 'owner@example.com',
+          role: 'owner',
+          active: true,
+          createdAt: '2026-08-17T00:00:00.000Z'
+        },
+        organization: {
+          organizationId: 'organization-1',
+          name: '测试经营公司',
+          brand: { productName: 'Geomap', primaryColor: '#2563eb', logoUrl: null },
+          createdAt: '2026-08-17T00:00:00.000Z'
+        }
+      });
+    if (path === '/api/workspaces' && request.method() === 'GET')
+      return fulfill({ workspaces: [{ ...workspace, state: undefined }] });
+    if (path === '/api/workspaces/workspace-1' && request.method() === 'GET')
+      return fulfill(workspace);
+    if (path.endsWith('/comments')) return fulfill({ comments: [] });
+    if (path.endsWith('/sync-jobs')) return fulfill({ syncJobs: [] });
+    if (path.endsWith('/audit')) return fulfill({ audit: [] });
+    if (path === '/api/workspaces/workspace-1' && request.method() === 'PUT') {
+      saveAttempts += 1;
+      if (saveAttempts === 1) {
+        Object.assign(workspace, {
+          version: 2,
+          updatedAt: '2026-08-17T01:00:00.000Z',
+          state: request.postDataJSON().state
+        });
+        return fulfill(workspace);
+      }
+      return fulfill(
+        {
+          error: 'version-conflict',
+          message: '工作区已被其他成员更新。',
+          details: { currentVersion: 3 }
+        },
+        409
+      );
+    }
+    return fulfill({ error: 'not-mocked' }, 404);
+  });
+  await page.addInitScript((data) => {
+    window.__PRELOADED_DATA__ = data;
+  }, example);
+  await page.goto('/?privateApi=http%3A%2F%2Fprivate.test');
+  await page.locator('[data-section="collaboration"]').click();
+  await expect(page.locator('#collabAuthForm')).toBeVisible();
+  await page.locator('#collabAuthForm [name="email"]').fill('owner@example.com');
+  await page.locator('#collabAuthForm [name="password"]').fill('owner-password-123');
+  await page.locator('#collabAuthForm button[type="submit"]').click();
+  await expect(page.locator('.collab-header')).toContainText('测试经营公司');
+  await page.locator('#collabPush').click();
+  await expect(page.locator('.collab-message')).toContainText('服务器 v2');
+  await page.locator('#collabPush').click();
+  await expect(page.locator('.collab-conflict')).toContainText('服务器已是 v3');
+  expect(errors).toEqual([expect.stringContaining('409 (Conflict)')]);
+});
+
+test('public build states that collaboration is local-only unless a private API is configured', async ({
+  page
+}) => {
+  await page.goto('/');
+  await page.locator('[data-section="collaboration"]').click();
+  await expect(page.locator('.collab-onboarding')).toContainText('GitHub Pages 不提供账号');
+  await expect(page.locator('.collab-onboarding')).toContainText('npm run private:server');
+});
+
 test('Lite disables event tracking through the shared capability contract', async ({ page }) => {
   const errors = await collectPageErrors(page);
   await page.goto('/?variant=lite');
