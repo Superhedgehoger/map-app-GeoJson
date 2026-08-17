@@ -109,14 +109,45 @@ test('Full records and compares business history on one shared time context', as
   expect(errors).toEqual([]);
 });
 
+test('Full publishes an explainable selection model and saves a candidate decision', async ({
+  page
+}) => {
+  const errors = await collectPageErrors(page);
+  await page.addInitScript((data) => {
+    window.__PRELOADED_DATA__ = data;
+  }, example);
+  await page.goto('/');
+  await page.locator('[data-section="selection"]').click();
+  await expect(page.locator('#selectionWorkspace')).toBeVisible();
+  await expect(page.locator('body')).toHaveClass(/site-selection-mode/);
+  await expect(page.locator('body')).not.toHaveClass(/(^|\s)selection-mode(\s|$)/);
+  await page.locator('[data-template="street"]').click();
+  await expect(page.locator('.selection-model-editor')).toBeVisible();
+  await expect(page.locator('.selection-validation')).toContainText('模型结构有效');
+  await page.locator('#selectionPublish').click();
+  await expect(page.locator('.selection-section-heading [data-status="published"]')).toBeVisible();
+  await page.locator('#selectionRun').click();
+  await expect(page.locator('.selection-scenario-report')).toBeVisible();
+  await expect(page.locator('.selection-result')).toHaveCount(3);
+  await expect(page.locator('.selection-contributions').first()).toContainText('原值');
+  await page.locator('#selectionConclusion').fill('优先金家岭候选点，进入现场复核');
+  await page.locator('#selectionDecide').click();
+  expect(await page.evaluate(() => window.GeomapCore.store.getState().decisions.length)).toBe(1);
+  expect(errors).toEqual([]);
+});
+
 test('Lite disables event tracking through the shared capability contract', async ({ page }) => {
   const errors = await collectPageErrors(page);
   await page.goto('/?variant=lite');
   await expect(page.locator('html')).toHaveAttribute('data-geomap-variant', 'lite');
   await expect(page.locator('#decisionShell')).toBeVisible();
   await expect(page.getByRole('button', { name: /经营时间/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /选址模型/ })).toBeDisabled();
   await expect(page.locator('[data-feature="event-tracker"]').first()).toBeHidden();
   expect(await page.evaluate(() => window.GeomapCore.config.capabilities.eventTracker)).toBe(false);
+  expect(await page.evaluate(() => window.GeomapCore.config.capabilities.siteSelection)).toBe(
+    false
+  );
   await expect(
     page.evaluate(() =>
       window.GeomapCore.recordStore.add({

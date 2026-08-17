@@ -1,12 +1,15 @@
 import { createAppConfig } from './config';
 import { DecisionShell } from './app/decision-shell';
 import { HistoryWorkspace } from './app/history-workspace';
+import { SelectionWorkspace } from './app/selection-workspace';
 import './app/decision-shell.css';
 import './app/history-workspace.css';
+import './app/selection-workspace.css';
 import { importGeoJson, exportGeoJson, toSafeSpreadsheetRows } from './io/geojson';
 import { sanitizeHtml, sanitizeUrl, neutralizeSpreadsheetFormula } from './security';
 import { GeomapFeatureStore } from './store/feature-store';
 import { GeomapRecordStore } from './store/record-store';
+import { GeomapSelectionStore } from './store/selection-store';
 import {
   exportWorkspaceBackup,
   importWorkspaceBackup,
@@ -49,6 +52,7 @@ export function bootstrapApp(): void {
   const workspace = loadWorkspace(window.localStorage);
   const store = new GeomapFeatureStore(workspace);
   const recordStore = new GeomapRecordStore(store, config.capabilities.eventTracker);
+  const selectionStore = new GeomapSelectionStore(store);
   store.subscribe((nextState) => saveWorkspace(window.localStorage, nextState));
 
   const syncFeatures = (value: unknown): void => {
@@ -68,6 +72,7 @@ export function bootstrapApp(): void {
     config,
     store,
     recordStore,
+    selectionStore,
     importGeoJson,
     exportGeoJson,
     toSafeSpreadsheetRows,
@@ -85,8 +90,13 @@ export function bootstrapApp(): void {
   });
   const initialLegacyCollection = window.GeomapLegacyBridge?.getFeatureCollection();
   if (initialLegacyCollection?.features.length) syncFeatures(initialLegacyCollection);
-  new DecisionShell(store, config.capabilities.eventTracker).mount();
+  new DecisionShell(
+    store,
+    config.capabilities.eventTracker,
+    config.capabilities.siteSelection
+  ).mount();
   new HistoryWorkspace(store, recordStore).mount();
+  new SelectionWorkspace(store, selectionStore).mount();
 }
 
 bootstrapApp();

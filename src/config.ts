@@ -26,6 +26,7 @@ export function createAppConfig(input: ConfigInput = {}): AppConfig {
     basePath: input.basePath ?? './',
     capabilities: Object.freeze({
       eventTracker: variant === 'full',
+      siteSelection: variant === 'full',
       offlineEditing: true,
       fullMobileEditing: false
     })

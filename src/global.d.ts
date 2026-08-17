@@ -1,5 +1,6 @@
 import type { GeomapFeatureStore } from './store/feature-store';
 import type { GeomapRecordStore } from './store/record-store';
+import type { GeomapSelectionStore } from './store/selection-store';
 import type { exportGeoJson, importGeoJson, toSafeSpreadsheetRows } from './io/geojson';
 import type { neutralizeSpreadsheetFormula, sanitizeHtml, sanitizeUrl } from './security';
 import type { AppConfig, GeoJsonFeatureCollection, GeomapVariant } from './types';
@@ -22,6 +23,7 @@ declare global {
       config: AppConfig;
       store: GeomapFeatureStore;
       recordStore: GeomapRecordStore;
+      selectionStore: GeomapSelectionStore;
       importGeoJson: typeof importGeoJson;
       exportGeoJson: typeof exportGeoJson;
       toSafeSpreadsheetRows: typeof toSafeSpreadsheetRows;

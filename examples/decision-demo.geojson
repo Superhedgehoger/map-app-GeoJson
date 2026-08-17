@@ -14,6 +14,10 @@
         "region": "市南区",
         "address": "香港中路示例地址 1 号",
         "openedAt": "2022-05-18",
+        "footTraffic": 21800,
+        "rent": 51000,
+        "parking": 7,
+        "competitorDistance": 1350,
         "businessRecords": [
           {
             "id": "QD-001-M-2026-06",
@@ -51,6 +55,10 @@
         "region": "市南区",
         "address": "澳门路示例地址 2 号",
         "openedAt": "2023-03-08",
+        "footTraffic": 19600,
+        "rent": 46000,
+        "parking": 6,
+        "competitorDistance": 980,
         "events": [
           {
             "id": "QD-002-E1",
@@ -191,6 +199,15 @@
         "region": "崂山区",
         "address": "金家岭示例候选地址",
         "plannedAt": "2026-05-20",
+        "selectionStage": "初筛",
+        "selectionOwner": "拓展一组",
+        "tradeAreaRadius": 1500,
+        "footTraffic": 24600,
+        "rent": 58000,
+        "parking": 8,
+        "visibility": 9,
+        "competitorDistance": 1280,
+        "households": 18600,
         "marker-color": "#a855f7",
         "marker-symbol": "star"
       }
@@ -208,6 +225,15 @@
         "region": "市北区",
         "address": "同安路示例候选地址",
         "plannedAt": "2026-06-10",
+        "selectionStage": "现场尽调",
+        "selectionOwner": "拓展二组",
+        "tradeAreaRadius": 1500,
+        "footTraffic": 19800,
+        "rent": 42000,
+        "parking": 6,
+        "visibility": 7,
+        "competitorDistance": 820,
+        "households": 22800,
         "marker-color": "#f59e0b",
         "marker-symbol": "star"
       }
@@ -225,6 +251,15 @@
         "region": "李沧区",
         "address": "沧口示例候选地址",
         "plannedAt": "2026-07-15",
+        "selectionStage": "初筛",
+        "selectionOwner": "拓展三组",
+        "tradeAreaRadius": 1500,
+        "footTraffic": 15200,
+        "rent": 26000,
+        "parking": 9,
+        "visibility": 6,
+        "competitorDistance": 2100,
+        "households": 26500,
         "marker-color": "#a855f7",
         "marker-symbol": "star"
       }

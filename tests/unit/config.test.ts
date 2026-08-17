@@ -13,6 +13,7 @@ describe('variant configuration', () => {
   it('exposes a single capability contract', () => {
     expect(createAppConfig({ search: '?variant=lite' }).capabilities).toEqual({
       eventTracker: false,
+      siteSelection: false,
       offlineEditing: true,
       fullMobileEditing: false
     });

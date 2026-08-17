@@ -36,6 +36,7 @@ export interface AppConfig {
   basePath: string;
   capabilities: {
     eventTracker: boolean;
+    siteSelection: boolean;
     offlineEditing: boolean;
     fullMobileEditing: boolean;
   };
@@ -160,12 +161,84 @@ export interface BusinessRecordDraft {
   createdBy?: string;
 }
 
+export type SelectionDirection = 'positive' | 'negative' | 'target' | 'threshold';
+export type SelectionNormalization = 'min-max' | 'target-range' | 'segmented' | 'formula';
+export type SelectionMissingPolicy = 'error' | 'eliminate' | 'neutral' | 'worst' | 'manual';
+
+export interface SelectionCriterion {
+  criterionId: string;
+  name: string;
+  sourceField: string;
+  unit?: string;
+  direction: SelectionDirection;
+  normalization: SelectionNormalization;
+  weight: number;
+  group?: string;
+  groupWeight?: number;
+  missingPolicy: SelectionMissingPolicy;
+  target?: number;
+  threshold?: number;
+  min?: number;
+  max?: number;
+  expression?: string;
+  explanation: string;
+}
+
 export interface SelectionModelState {
   modelId: string;
   name: string;
+  description: string;
+  applicableRegion?: string;
+  businessFormat?: string;
+  template: 'mall' | 'street' | 'community' | 'blank';
   version: number;
   status: 'draft' | 'published' | 'retired';
-  definition: JsonValue;
+  criteria: SelectionCriterion[];
+  outputScale: 100;
+  createdBy?: string;
+  createdAt: string;
+  publishedAt?: string;
+}
+
+export interface SelectionContribution {
+  criterionId: string;
+  name: string;
+  rawValue: number | null;
+  normalizedScore: number;
+  weightedScore: number;
+  explanation: string;
+}
+
+export interface CandidateSelectionResult {
+  locationId: string;
+  name: string;
+  score: number;
+  eligible: boolean;
+  completeness: number;
+  eliminatedReasons: string[];
+  contributions: SelectionContribution[];
+}
+
+export interface SelectionScenarioState {
+  scenarioId: string;
+  name: string;
+  modelId: string;
+  modelVersion: number;
+  candidateIds: string[];
+  assumptions: Record<string, JsonValue>;
+  results: CandidateSelectionResult[];
+  status: 'draft' | 'completed';
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface SelectionDecisionState {
+  decisionId: string;
+  scenarioId: string;
+  recommendedLocationId: string;
+  conclusion: string;
+  reasons: string[];
+  decidedAt: string;
 }
 
 export interface DataSourceState {
@@ -187,8 +260,8 @@ export interface WorkspaceState {
   records: BusinessRecord[];
   eventSeries: JsonValue[];
   selectionModels: SelectionModelState[];
-  selectionScenarios: JsonValue[];
-  decisions: JsonValue[];
+  selectionScenarios: SelectionScenarioState[];
+  decisions: SelectionDecisionState[];
   savedViews: JsonValue[];
   dataSources: DataSourceState[];
   audit: JsonValue[];
@@ -230,5 +303,8 @@ export interface FeatureStore {
   setRecords(records: readonly BusinessRecord[]): void;
   upsertRecord(record: BusinessRecord): void;
   setSavedViews(savedViews: readonly JsonValue[]): void;
+  setSelectionModels(models: readonly SelectionModelState[]): void;
+  setSelectionScenarios(scenarios: readonly SelectionScenarioState[]): void;
+  setDecisions(decisions: readonly SelectionDecisionState[]): void;
   subscribe(listener: StoreListener): () => void;
 }

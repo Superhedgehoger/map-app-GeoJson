@@ -3,6 +3,9 @@ import type {
   FeatureStore,
   GeoJsonFeature,
   JsonValue,
+  SelectionDecisionState,
+  SelectionModelState,
+  SelectionScenarioState,
   StoreListener,
   WorkspaceState
 } from '../types';
@@ -67,6 +70,21 @@ export class GeomapFeatureStore implements FeatureStore {
 
   setSavedViews(savedViews: readonly JsonValue[]): void {
     this.#state.savedViews = clone([...savedViews]);
+    this.#touch();
+  }
+
+  setSelectionModels(models: readonly SelectionModelState[]): void {
+    this.#state.selectionModels = clone([...models]);
+    this.#touch();
+  }
+
+  setSelectionScenarios(scenarios: readonly SelectionScenarioState[]): void {
+    this.#state.selectionScenarios = clone([...scenarios]);
+    this.#touch();
+  }
+
+  setDecisions(decisions: readonly SelectionDecisionState[]): void {
+    this.#state.decisions = clone([...decisions]);
     this.#touch();
   }
 

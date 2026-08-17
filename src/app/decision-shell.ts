@@ -2,7 +2,7 @@ import type { GeomapFeatureStore } from '../store/feature-store';
 import type { LocationEntity, LocationStatus } from '../types';
 
 type ShellMode = 'view' | 'edit';
-type ShellSection = 'overview' | 'network' | 'history';
+type ShellSection = 'overview' | 'network' | 'history' | 'selection';
 
 const STATUS_LABELS: Record<LocationStatus, string> = {
   planned: '计划',
@@ -30,6 +30,7 @@ function formatUpdatedAt(value: string): string {
 export class DecisionShell {
   readonly #store: GeomapFeatureStore;
   readonly #historyEnabled: boolean;
+  readonly #selectionEnabled: boolean;
   #mode: ShellMode = 'view';
   #section: ShellSection = 'overview';
   #query = '';
@@ -39,9 +40,10 @@ export class DecisionShell {
   #insights: HTMLElement | null = null;
   #historicalLocations: LocationEntity[] | null = null;
 
-  constructor(store: GeomapFeatureStore, historyEnabled = true) {
+  constructor(store: GeomapFeatureStore, historyEnabled = true, selectionEnabled = true) {
     this.#store = store;
     this.#historyEnabled = historyEnabled;
+    this.#selectionEnabled = selectionEnabled;
   }
 
   mount(): void {
@@ -116,7 +118,11 @@ export class DecisionShell {
             disabled: !this.#historyEnabled,
             section: this.#historyEnabled ? 'history' : undefined
           })}
-          ${button('选址模型', { disabled: true })}
+          ${button('选址模型', {
+            active: this.#section === 'selection',
+            disabled: !this.#selectionEnabled,
+            section: this.#selectionEnabled ? 'selection' : undefined
+          })}
           ${button('数据中心', { disabled: true })}
         </nav>
         <div class="decision-shell-actions">
@@ -155,7 +161,7 @@ export class DecisionShell {
       .slice(0, 4);
     const missingRegion = locations.filter((item) => !item.region).length;
     this.#insights.innerHTML = `
-      <div class="decision-insights-header"><div><span>${this.#section === 'overview' ? '经营总览' : this.#section === 'network' ? '门店网络' : '历史状态'}</span><strong>${locations.length} 个位置</strong></div><span class="decision-mode-tag">${this.#section === 'history' ? '时间上下文' : this.#mode === 'view' ? '查看模式' : '编辑模式'}</span></div>
+      <div class="decision-insights-header"><div><span>${this.#section === 'overview' ? '经营总览' : this.#section === 'network' ? '门店网络' : this.#section === 'history' ? '历史状态' : '选址模型'}</span><strong>${locations.length} 个位置</strong></div><span class="decision-mode-tag">${this.#section === 'history' ? '时间上下文' : this.#section === 'selection' ? '模型情景' : this.#mode === 'view' ? '查看模式' : '编辑模式'}</span></div>
       <section><h2>区域分布</h2>${regionSummary.length ? regionSummary.map((item) => `<button type="button" data-region="${this.#escapeAttribute(item.region)}"><span>${item.region}</span><strong>${item.count}</strong></button>`).join('') : '<p>暂无区域字段</p>'}</section>
       <section><h2>数据提示</h2><p>${missingRegion > 0 ? `${missingRegion} 个位置缺少区域，请在数据中心补充。` : '区域字段完整，可用于管理筛选。'}</p><p>${this.#section === 'history' ? '地图与指标已使用底部时间轴的同一历史状态。' : '进入经营时间可回放事件并比较两个时间点。'}</p></section>
       <section><h2>位置列表</h2><div class="decision-location-list">${
@@ -179,7 +185,9 @@ export class DecisionShell {
             ? 'network'
             : item.dataset.section === 'history'
               ? 'history'
-              : 'overview';
+              : item.dataset.section === 'selection'
+                ? 'selection'
+                : 'overview';
         this.#render();
         window.dispatchEvent(
           new CustomEvent('geomap:section-changed', { detail: { section: this.#section } })
