@@ -25,6 +25,12 @@ test('Full opens in decision view and keeps legacy editing available', async ({ 
   await expect(page.locator('.decision-kpis article').first().locator('strong')).toHaveText('12');
   await expect(page.locator('.layer-item').first()).toBeAttached({ timeout: 15_000 });
   await expect(page.locator('#controls')).toBeHidden();
+  await page.locator('#decisionShellHideBtn').click();
+  await expect(page.locator('#decisionShell')).toBeHidden();
+  await expect(page.locator('#decisionShellRevealBtn')).toBeVisible();
+  await expect(page.locator('#map')).toHaveCSS('top', '0px');
+  await page.locator('#decisionShellRevealBtn').click();
+  await expect(page.locator('#decisionShell')).toBeVisible();
   await page.locator('#decisionModeBtn').click();
   await expect(page.locator('#decisionShell')).toBeHidden();
   await expect(page.locator('#decisionReturnBtn')).toBeVisible();

@@ -10,6 +10,7 @@ import './app/history-workspace.css';
 import './app/selection-workspace.css';
 import './app/data-workspace.css';
 import './app/collaboration-workspace.css';
+import './app/legacy-menu-theme.css';
 import { importGeoJson, exportGeoJson, toSafeSpreadsheetRows } from './io/geojson';
 import { sanitizeHtml, sanitizeUrl, neutralizeSpreadsheetFormula } from './security';
 import { GeomapFeatureStore } from './store/feature-store';

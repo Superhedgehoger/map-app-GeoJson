@@ -41,6 +41,8 @@ export class DecisionShell {
   #root: HTMLElement | null = null;
   #insights: HTMLElement | null = null;
   #returnButton: HTMLButtonElement | null = null;
+  #revealButton: HTMLButtonElement | null = null;
+  #shellCollapsed = false;
   #historicalLocations: LocationEntity[] | null = null;
 
   constructor(
@@ -60,6 +62,7 @@ export class DecisionShell {
   mount(): void {
     if (document.getElementById('decisionShell')) return;
     this.#mode = sessionStorage.getItem('geomap.shell.mode') === 'edit' ? 'edit' : 'view';
+    this.#shellCollapsed = sessionStorage.getItem('geomap.shell.collapsed') === 'true';
     this.#root = document.createElement('header');
     this.#root.id = 'decisionShell';
     this.#root.className = 'decision-shell';
@@ -81,8 +84,17 @@ export class DecisionShell {
     this.#returnButton.addEventListener('click', () => this.#setMode('view'));
     document.body.append(this.#returnButton);
 
+    this.#revealButton = document.createElement('button');
+    this.#revealButton.id = 'decisionShellRevealBtn';
+    this.#revealButton.className = 'decision-shell-reveal-btn';
+    this.#revealButton.type = 'button';
+    this.#revealButton.innerHTML = '<i class="fa-solid fa-bars"></i><span>显示顶部菜单</span>';
+    this.#revealButton.addEventListener('click', () => this.#setShellCollapsed(false));
+    document.body.append(this.#revealButton);
+
     document.body.classList.add('decision-shell-enabled');
     this.#applyMode();
+    this.#applyShellVisibility();
     this.#render();
     this.#store.subscribe(() => this.#render());
     window.addEventListener('geomap:history-state-changed', (event) => {
@@ -157,6 +169,7 @@ export class DecisionShell {
         <div class="decision-shell-actions">
           <span class="decision-freshness">${formatUpdatedAt(state.updatedAt)}</span>
           <button id="decisionModeBtn" class="decision-mode-btn" type="button"><i class="fa-solid fa-arrow-right"></i>开始使用</button>
+          <button id="decisionShellHideBtn" class="decision-shell-hide-btn" type="button" aria-label="隐藏顶部菜单" title="隐藏顶部菜单"><i class="fa-solid fa-chevron-up"></i></button>
         </div>
       </div>
       <div class="decision-shell-dashboard">
@@ -230,6 +243,9 @@ export class DecisionShell {
     this.#root?.querySelector('#decisionModeBtn')?.addEventListener('click', () => {
       this.#setMode('edit');
     });
+    this.#root?.querySelector('#decisionShellHideBtn')?.addEventListener('click', () => {
+      this.#setShellCollapsed(true);
+    });
     this.#root
       ?.querySelector<HTMLInputElement>('#decisionSearch')
       ?.addEventListener('input', (event) => {
@@ -290,6 +306,17 @@ export class DecisionShell {
   #applyMode(): void {
     document.body.classList.toggle('decision-view-mode', this.#mode === 'view');
     document.body.classList.toggle('decision-edit-mode', this.#mode === 'edit');
+  }
+
+  #applyShellVisibility(): void {
+    document.body.classList.toggle('decision-shell-collapsed', this.#shellCollapsed);
+  }
+
+  #setShellCollapsed(collapsed: boolean): void {
+    this.#shellCollapsed = collapsed;
+    sessionStorage.setItem('geomap.shell.collapsed', String(collapsed));
+    this.#applyShellVisibility();
+    window.setTimeout(() => window.dispatchEvent(new Event('resize')), 0);
   }
 
   #setMode(mode: ShellMode): void {

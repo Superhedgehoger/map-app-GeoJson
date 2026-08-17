@@ -28,6 +28,10 @@ await page.waitForFunction(
 await page.locator('.decision-freshness').evaluate((element) => {
   element.textContent = '演示数据 · 2026-08-17';
 });
+await page
+  .locator('#_briefMsg')
+  .evaluate((element) => element.remove())
+  .catch(() => undefined);
 await page.waitForTimeout(500);
 
 await mkdir(resolve('docs/images'), { recursive: true });

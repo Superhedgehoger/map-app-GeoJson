@@ -134,6 +134,72 @@
   cursor: pointer;
 }
 
+.decision-shell-hide-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  min-height: 34px;
+  padding: 0;
+  color: var(--text-secondary);
+  background: var(--bg-glass-light);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.decision-shell-hide-btn:hover {
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.decision-shell-reveal-btn {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  z-index: 1701;
+  display: none;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 13px;
+  color: var(--text-primary);
+  font: inherit;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass-highlight);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-float), var(--shadow-inset);
+  backdrop-filter: blur(14px);
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+
+.decision-shell-reveal-btn:hover {
+  color: white;
+  background: var(--primary-color);
+}
+
+body.decision-shell-collapsed {
+  --decision-shell-height: 0px;
+}
+
+body.decision-shell-collapsed.decision-view-mode .decision-shell {
+  display: none;
+}
+
+body.decision-shell-collapsed.decision-view-mode .decision-shell-reveal-btn {
+  display: inline-flex;
+}
+
+body.decision-shell-collapsed.decision-view-mode .decision-insights {
+  top: 14px;
+  max-height: calc(100vh - 28px);
+}
+
+body.decision-edit-mode .decision-shell-reveal-btn {
+  display: none;
+}
+
 .decision-shell-dashboard {
   display: grid;
   grid-template-columns: minmax(440px, 1.2fr) minmax(500px, 1fr);
