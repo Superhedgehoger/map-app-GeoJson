@@ -1,6 +1,7 @@
 # 测试数据（绝不上传）
 /data/
 /test-data/
+/private-data/
 /mock/
 *.csv
 *.xlsx

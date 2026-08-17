@@ -1,0 +1,176 @@
+/* v4 工作区沿用原地图编辑器的深色毛玻璃视觉变量。 */
+.decision-shell,
+.decision-insights,
+.history-workspace {
+  color: var(--text-primary);
+  background: var(--bg-glass);
+  border-color: var(--border-glass);
+  box-shadow: var(--shadow-float), var(--shadow-inset);
+  backdrop-filter: blur(14px);
+}
+
+.decision-shell {
+  --decision-surface: var(--bg-glass);
+  --decision-surface-soft: var(--bg-glass);
+  --decision-border: var(--border-glass);
+  --decision-text: var(--text-primary);
+  --decision-muted: var(--text-secondary);
+  --decision-accent: var(--primary-color);
+}
+
+.decision-nav-item,
+.decision-brand strong,
+.decision-insights h2 {
+  color: var(--text-primary);
+}
+
+.decision-brand i,
+.selection-header span,
+.selection-section-heading span,
+.data-header span,
+.data-panel header span,
+.metric-import-shell header span,
+.collab-state > i,
+.collab-state > span,
+.collab-header span,
+.collab-grid header span {
+  color: var(--primary-color);
+}
+
+.decision-nav-item:hover:not(:disabled),
+.decision-nav-item.is-active,
+.decision-mode-tag,
+.selection-message,
+.data-message,
+.collab-message {
+  background: color-mix(in srgb, var(--primary-color) 18%, transparent);
+}
+
+.decision-nav-item.is-active::after {
+  background: var(--primary-color);
+}
+
+.decision-mode-btn,
+.history-primary,
+.selection-workspace button.is-primary,
+.data-workspace button.is-primary,
+.metric-import-dialog button.is-primary,
+.collaboration-workspace button.is-primary {
+  color: white !important;
+  background: var(--primary-color) !important;
+  border-color: var(--primary-hover) !important;
+}
+
+.decision-filters label,
+.decision-kpis article,
+.history-context-line,
+.history-metric-summary article,
+.selection-model-list,
+.selection-model-editor,
+.selection-run-box,
+.selection-result,
+.selection-backtest,
+.selection-contract,
+.data-toolbar,
+.data-kpis article,
+.data-panel,
+.collab-onboarding article,
+.collab-auth,
+.collab-kpis article,
+.collab-grid > section,
+.collab-list article {
+  color: var(--text-primary);
+  background: var(--bg-glass-light);
+  border-color: var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-inset);
+}
+
+.history-toolbar > button,
+.history-compare-box > button,
+.selection-workspace button,
+.data-workspace button,
+.metric-import-dialog button,
+.collaboration-workspace button,
+.collaboration-workspace select {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-glass);
+  border-radius: var(--radius-md);
+}
+
+.history-toolbar > button:hover,
+.history-compare-box > button:hover,
+.selection-workspace button:hover,
+.data-workspace button:hover,
+.metric-import-dialog button:hover,
+.collaboration-workspace button:hover {
+  color: white;
+  background: var(--primary-color);
+  border-color: var(--primary-hover);
+}
+
+.history-toolbar input[type='date'],
+.history-toolbar select,
+.history-compare-box input,
+.history-record-dialog input,
+.history-record-dialog select,
+.history-record-dialog textarea,
+.selection-workspace input,
+.selection-workspace select,
+.data-workspace input,
+.data-workspace select,
+.metric-import-dialog input,
+.metric-import-dialog select,
+.collaboration-workspace input,
+.collaboration-workspace textarea,
+.collaboration-workspace select {
+  color: var(--text-primary);
+  color-scheme: dark;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-glass);
+  border-radius: var(--radius-sm);
+}
+
+.selection-workspace,
+.data-workspace,
+.collaboration-workspace {
+  color: var(--text-primary);
+  background: rgba(18, 18, 18, 0.94);
+}
+
+.history-record-dialog,
+.metric-import-dialog {
+  color: var(--text-primary);
+  background: rgba(18, 18, 18, 0.72);
+  backdrop-filter: blur(14px);
+}
+
+.history-record-dialog > form,
+.metric-import-shell {
+  color: var(--text-primary);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-float), var(--shadow-inset);
+}
+
+.collab-auth aside {
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--primary-color) 48%, #121212),
+    #121212
+  );
+}
+
+.decision-filters label span,
+.decision-freshness,
+.decision-insights p,
+.history-toolbar label,
+.history-range-wrap,
+.selection-header p,
+.data-header p,
+.collab-header p,
+.collab-hint {
+  color: var(--text-secondary);
+}

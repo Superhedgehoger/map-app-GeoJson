@@ -1,4 +1,17 @@
-import type { FeatureStore, GeoJsonFeature, StoreListener, WorkspaceState } from '../types';
+import type {
+  BusinessRecord,
+  DataSourceState,
+  FeatureStore,
+  GeoJsonFeature,
+  JsonValue,
+  MetricDefinition,
+  SelectionDecisionState,
+  SelectionModelState,
+  SelectionScenarioState,
+  StoreListener,
+  WorkspaceState
+} from '../types';
+import { deriveLocationsFromFeatures } from '../domain/locations';
 
 function clone<T>(value: T): T {
   return structuredClone(value);
@@ -23,6 +36,7 @@ export class GeomapFeatureStore implements FeatureStore {
 
   setFeatures(features: readonly GeoJsonFeature[]): void {
     this.#state.features = clone([...features]);
+    this.#state.locations = deriveLocationsFromFeatures(this.#state.features);
     this.#touch();
   }
 
@@ -31,6 +45,7 @@ export class GeomapFeatureStore implements FeatureStore {
     const index = id === undefined ? -1 : this.#state.features.findIndex((item) => item.id === id);
     if (index === -1) this.#state.features.push(clone(feature));
     else this.#state.features[index] = clone(feature);
+    this.#state.locations = deriveLocationsFromFeatures(this.#state.features);
     this.#touch();
   }
 
@@ -38,8 +53,51 @@ export class GeomapFeatureStore implements FeatureStore {
     const before = this.#state.features.length;
     this.#state.features = this.#state.features.filter((feature) => feature.id !== id);
     if (this.#state.features.length === before) return false;
+    this.#state.locations = deriveLocationsFromFeatures(this.#state.features);
     this.#touch();
     return true;
+  }
+
+  setRecords(records: readonly BusinessRecord[]): void {
+    this.#state.records = clone([...records]);
+    this.#touch();
+  }
+
+  upsertRecord(record: BusinessRecord): void {
+    const index = this.#state.records.findIndex((item) => item.recordId === record.recordId);
+    if (index === -1) this.#state.records.push(clone(record));
+    else this.#state.records[index] = clone(record);
+    this.#touch();
+  }
+
+  setSavedViews(savedViews: readonly JsonValue[]): void {
+    this.#state.savedViews = clone([...savedViews]);
+    this.#touch();
+  }
+
+  setMetricDefinitions(definitions: readonly MetricDefinition[]): void {
+    this.#state.metricDefinitions = clone([...definitions]);
+    this.#touch();
+  }
+
+  setDataSources(sources: readonly DataSourceState[]): void {
+    this.#state.dataSources = clone([...sources]);
+    this.#touch();
+  }
+
+  setSelectionModels(models: readonly SelectionModelState[]): void {
+    this.#state.selectionModels = clone([...models]);
+    this.#touch();
+  }
+
+  setSelectionScenarios(scenarios: readonly SelectionScenarioState[]): void {
+    this.#state.selectionScenarios = clone([...scenarios]);
+    this.#touch();
+  }
+
+  setDecisions(decisions: readonly SelectionDecisionState[]): void {
+    this.#state.decisions = clone([...decisions]);
+    this.#touch();
   }
 
   subscribe(listener: StoreListener): () => void {

@@ -1296,6 +1296,8 @@ function updateLayerList() {
     if (typeof updateLayerStats === 'function') {
         updateLayerStats();
     }
+
+    emitDecisionWorkspaceChanged();
 }
 
 // 图层列表事件委托处理
@@ -5526,6 +5528,170 @@ if (exportSinglePageBtn) {
     exportSinglePageBtn.addEventListener('click', exportAsSinglePage);
 }
 window.exportAsSinglePage = exportAsSinglePage;
+
+// ============================================================
+// == v3 decision-workspace compatibility bridge              ==
+// ============================================================
+
+function collectDecisionFeatureCollection() {
+    const layers = [];
+    const seen = new Set();
+    const addLayer = (layer) => {
+        if (!layer || layer._isGroupMarker || seen.has(layer) || typeof layer.toGeoJSON !== 'function') return;
+        seen.add(layer);
+        layers.push(layer);
+    };
+
+    drawnItems.eachLayer(addLayer);
+    hiddenLayers.forEach(addLayer);
+    if (typeof markerGroupManager !== 'undefined' && markerGroupManager) {
+        markerGroupManager.groups.forEach(group => group.markers.forEach(addLayer));
+    }
+    if (typeof markerClusterGroup !== 'undefined' && markerClusterGroup) {
+        markerClusterGroup.eachLayer(addLayer);
+    }
+
+    return {
+        type: 'FeatureCollection',
+        features: layers.map(layer => {
+            const feature = layer.toGeoJSON();
+            feature.properties = { ...(layer.feature?.properties || feature.properties || {}) };
+            if (layer.feature?.id !== undefined) feature.id = layer.feature.id;
+            return feature;
+        })
+    };
+}
+
+function emitDecisionWorkspaceChanged() {
+    if (typeof window.CustomEvent !== 'function') return;
+    window.dispatchEvent(new CustomEvent('geomap:features-changed', {
+        detail: collectDecisionFeatureCollection()
+    }));
+}
+
+function getDecisionMarkers() {
+    const markers = [];
+    const seen = new Set();
+    const addMarker = marker => {
+        if (!(marker instanceof L.Marker) || marker._isGroupMarker || seen.has(marker)) return;
+        seen.add(marker);
+        markers.push(marker);
+    };
+    drawnItems.eachLayer(addMarker);
+    hiddenLayers.forEach(addMarker);
+    if (typeof markerGroupManager !== 'undefined' && markerGroupManager) {
+        markerGroupManager.groups.forEach(group => group.markers.forEach(addMarker));
+    }
+    if (typeof markerClusterGroup !== 'undefined' && markerClusterGroup) {
+        markerClusterGroup.eachLayer(addMarker);
+    }
+    return markers;
+}
+
+let currentDecisionLocationFilter = {};
+let currentHistoricalLocationState = null;
+
+function refreshDecisionMarkerVisibility() {
+    const query = String(currentDecisionLocationFilter.query || '').trim().toLowerCase();
+    const region = String(currentDecisionLocationFilter.region || 'all');
+    const status = String(currentDecisionLocationFilter.status || 'all');
+    const normalizeStatus = value => ({
+        '计划': 'planned',
+        '规划': 'planned',
+        '筹备': 'preparing',
+        '在建': 'preparing',
+        '在营': 'open',
+        '营业': 'open',
+        '暂停': 'paused',
+        '停业': 'paused',
+        '闭店': 'closed',
+        '关闭': 'closed'
+    }[value] || value);
+
+    getDecisionMarkers().forEach(marker => {
+        const props = marker.feature?.properties || {};
+        const locationId = String(props.locationId || props.storeId || props.门店编号 || props.门店ID || marker.feature?.id || '');
+        const name = String(props.name || props.名称 || props.门店 || '');
+        const markerRegion = String(props.region || props.区域 || props.城市 || props.city || '');
+        const kind = String(props.locationType || props.entityType || props.位置类型 || '').toLowerCase();
+        const originalStatus = normalizeStatus(String(props.status || props.state || props.状态 || (kind === 'candidate' ? 'planned' : 'open')).toLowerCase());
+        const markerStatus = currentHistoricalLocationState?.statusById?.[locationId] || originalStatus;
+        const matchesHistory = !currentHistoricalLocationState || currentHistoricalLocationState.locationIds.has(locationId);
+        const matches = (!query || `${name} ${markerRegion} ${props.address || props.地址 || ''}`.toLowerCase().includes(query))
+            && (region === 'all' || markerRegion === region)
+            && (status === 'all' || markerStatus === status)
+            && matchesHistory;
+
+        if (marker._decisionOriginalOpacity === undefined) {
+            marker._decisionOriginalOpacity = marker.options.opacity ?? 1;
+        }
+        marker.setOpacity(matches ? marker._decisionOriginalOpacity : 0);
+        const element = marker.getElement();
+        if (element) element.style.pointerEvents = matches ? '' : 'none';
+    });
+}
+
+function applyDecisionLocationFilter(filter = {}) {
+    currentDecisionLocationFilter = { ...filter };
+    refreshDecisionMarkerVisibility();
+}
+
+function applyDecisionHistoricalState(state) {
+    currentHistoricalLocationState = state ? {
+        locationIds: new Set(state.locationIds || []),
+        statusById: { ...(state.statusById || {}) }
+    } : null;
+    refreshDecisionMarkerVisibility();
+}
+
+function focusDecisionLocation(name) {
+    const marker = getDecisionMarkers().find(item => {
+        const props = item.feature?.properties || {};
+        return String(props.name || props.名称 || props.门店 || '') === name;
+    });
+    if (!marker) return false;
+    map.setView(marker.getLatLng(), Math.max(map.getZoom(), 15));
+    marker.openPopup();
+    return true;
+}
+
+let decisionMetricLayer = null;
+function applyDecisionMetricState(state) {
+    if (decisionMetricLayer) {
+        map.removeLayer(decisionMetricLayer);
+        decisionMetricLayer = null;
+    }
+    if (!state || !state.values) return;
+    decisionMetricLayer = L.layerGroup();
+    getDecisionMarkers().forEach(marker => {
+        const props = marker.feature?.properties || {};
+        const locationId = String(props.locationId || props.storeId || props.门店编号 || props.门店ID || marker.feature?.id || '');
+        const value = Number(state.values[locationId]);
+        if (!Number.isFinite(value)) return;
+        const ratio = Math.max(0, Math.min(1, value));
+        const red = Math.round(239 - ratio * 202);
+        const green = Math.round(68 + ratio * 131);
+        const blue = Math.round(68 + ratio * 167);
+        L.circleMarker(marker.getLatLng(), {
+            radius: 7 + ratio * 11,
+            color: `rgb(${red},${green},${blue})`,
+            fillColor: `rgb(${red},${green},${blue})`,
+            fillOpacity: 0.34,
+            weight: 2,
+            interactive: false,
+            pane: 'overlayPane'
+        }).addTo(decisionMetricLayer);
+    });
+    decisionMetricLayer.addTo(map);
+}
+
+window.GeomapLegacyBridge = Object.freeze({
+    getFeatureCollection: collectDecisionFeatureCollection,
+    applyLocationFilter: applyDecisionLocationFilter,
+    applyHistoricalState: applyDecisionHistoricalState,
+    applyMetricState: applyDecisionMetricState,
+    focusLocation: focusDecisionLocation
+});
 
 // ============================================================
 // == 启动时检测预载数据（支持 build-single.py --with-data）==

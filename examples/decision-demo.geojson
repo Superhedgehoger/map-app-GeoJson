@@ -1,0 +1,392 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "QD-001",
+      "geometry": { "type": "Point", "coordinates": [120.3826, 36.0671] },
+      "properties": {
+        "locationId": "QD-001",
+        "name": "海岸中心店",
+        "locationType": "store",
+        "status": "open",
+        "brand": "海岚咖啡",
+        "region": "市南区",
+        "address": "香港中路示例地址 1 号",
+        "openedAt": "2022-05-18",
+        "footTraffic": 21800,
+        "rent": 51000,
+        "parking": 7,
+        "competitorDistance": 1350,
+        "businessRecords": [
+          {
+            "id": "QD-001-M-2026-06",
+            "recordType": "metric",
+            "name": "revenue 2026-06",
+            "createdAt": "2026-06-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 120000,
+            "target": 122000,
+            "unit": "元"
+          },
+          {
+            "id": "QD-001-M-2026-07",
+            "recordType": "metric",
+            "name": "revenue 2026-07",
+            "createdAt": "2026-07-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 125000,
+            "target": 128000,
+            "unit": "元"
+          }
+        ],
+        "marker-color": "#2563eb",
+        "marker-symbol": "shop"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QD-002",
+      "geometry": { "type": "Point", "coordinates": [120.4008, 36.0615] },
+      "properties": {
+        "locationId": "QD-002",
+        "name": "奥帆店",
+        "locationType": "store",
+        "status": "open",
+        "brand": "海岚咖啡",
+        "region": "市南区",
+        "address": "澳门路示例地址 2 号",
+        "openedAt": "2023-03-08",
+        "footTraffic": 19600,
+        "rent": 46000,
+        "parking": 6,
+        "competitorDistance": 980,
+        "events": [
+          {
+            "id": "QD-002-E1",
+            "name": "完成店面升级",
+            "createdAt": "2024-09-16T09:00:00+08:00"
+          }
+        ],
+        "businessRecords": [
+          {
+            "id": "QD-002-M-2026-06",
+            "recordType": "metric",
+            "name": "revenue 2026-06",
+            "createdAt": "2026-06-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 110000,
+            "target": 112000,
+            "unit": "元"
+          },
+          {
+            "id": "QD-002-M-2026-07",
+            "recordType": "metric",
+            "name": "revenue 2026-07",
+            "createdAt": "2026-07-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 118000,
+            "target": 116000,
+            "unit": "元"
+          }
+        ],
+        "marker-color": "#2563eb",
+        "marker-symbol": "shop"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QD-003",
+      "geometry": { "type": "Point", "coordinates": [120.3712, 36.0894] },
+      "properties": {
+        "locationId": "QD-003",
+        "name": "台东店",
+        "locationType": "store",
+        "status": "open",
+        "brand": "海岚咖啡",
+        "region": "市北区",
+        "address": "台东一路示例地址 3 号",
+        "openedAt": "2021-10-01",
+        "businessRecords": [
+          {
+            "id": "QD-003-M-2026-06",
+            "recordType": "metric",
+            "name": "revenue 2026-06",
+            "createdAt": "2026-06-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 96000,
+            "target": 100000,
+            "unit": "元"
+          },
+          {
+            "id": "QD-003-M-2026-07",
+            "recordType": "metric",
+            "name": "revenue 2026-07",
+            "createdAt": "2026-07-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 101000,
+            "target": 102000,
+            "unit": "元"
+          }
+        ],
+        "marker-color": "#2563eb",
+        "marker-symbol": "shop"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QD-004",
+      "geometry": { "type": "Point", "coordinates": [120.4121, 36.1028] },
+      "properties": {
+        "locationId": "QD-004",
+        "name": "新都心店",
+        "locationType": "store",
+        "status": "paused",
+        "brand": "海岚咖啡",
+        "region": "市北区",
+        "address": "黑龙江南路示例地址 4 号",
+        "openedAt": "2022-11-20",
+        "events": [
+          {
+            "id": "QD-004-S1",
+            "recordType": "state-change",
+            "name": "设备整改暂停营业",
+            "status": "paused",
+            "previousStatus": "open",
+            "createdAt": "2026-07-05T08:30:00+08:00"
+          }
+        ],
+        "businessRecords": [
+          {
+            "id": "QD-004-M-2026-06",
+            "recordType": "metric",
+            "name": "revenue 2026-06",
+            "createdAt": "2026-06-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 84000,
+            "target": 95000,
+            "unit": "元"
+          },
+          {
+            "id": "QD-004-M-2026-07",
+            "recordType": "metric",
+            "name": "revenue 2026-07",
+            "createdAt": "2026-07-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 39000,
+            "target": 95000,
+            "unit": "元"
+          }
+        ],
+        "marker-color": "#f59e0b",
+        "marker-symbol": "shop"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QD-005",
+      "geometry": { "type": "Point", "coordinates": [120.4688, 36.1075] },
+      "properties": {
+        "locationId": "QD-005",
+        "name": "崂山商务店",
+        "locationType": "store",
+        "status": "open",
+        "brand": "海岚咖啡",
+        "region": "崂山区",
+        "address": "深圳路示例地址 5 号",
+        "openedAt": "2024-01-12",
+        "businessRecords": [
+          {
+            "id": "QD-005-M-2026-06",
+            "recordType": "metric",
+            "name": "revenue 2026-06",
+            "createdAt": "2026-06-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 132000,
+            "target": 125000,
+            "unit": "元"
+          },
+          {
+            "id": "QD-005-M-2026-07",
+            "recordType": "metric",
+            "name": "revenue 2026-07",
+            "createdAt": "2026-07-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 146000,
+            "target": 130000,
+            "unit": "元"
+          }
+        ],
+        "marker-color": "#2563eb",
+        "marker-symbol": "shop"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QD-006",
+      "geometry": { "type": "Point", "coordinates": [120.4376, 36.1454] },
+      "properties": {
+        "locationId": "QD-006",
+        "name": "李村店",
+        "locationType": "store",
+        "status": "open",
+        "brand": "海岚咖啡",
+        "region": "李沧区",
+        "address": "夏庄路示例地址 6 号",
+        "openedAt": "2020-08-15",
+        "businessRecords": [
+          {
+            "id": "QD-006-M-2026-06",
+            "recordType": "metric",
+            "name": "revenue 2026-06",
+            "createdAt": "2026-06-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 89000,
+            "target": 90000,
+            "unit": "元"
+          },
+          {
+            "id": "QD-006-M-2026-07",
+            "recordType": "metric",
+            "name": "revenue 2026-07",
+            "createdAt": "2026-07-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 94000,
+            "target": 92000,
+            "unit": "元"
+          }
+        ],
+        "marker-color": "#2563eb",
+        "marker-symbol": "shop"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QD-007",
+      "geometry": { "type": "Point", "coordinates": [120.3352, 36.0648] },
+      "properties": {
+        "locationId": "QD-007",
+        "name": "西海岸旧店",
+        "locationType": "store",
+        "status": "closed",
+        "brand": "海岚咖啡",
+        "region": "西海岸新区",
+        "address": "滨海大道示例地址 7 号",
+        "openedAt": "2019-04-10",
+        "closedAt": "2025-12-31",
+        "marker-color": "#ef4444",
+        "marker-symbol": "shop"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QD-C01",
+      "geometry": { "type": "Point", "coordinates": [120.4551, 36.0921] },
+      "properties": {
+        "locationId": "QD-C01",
+        "name": "金家岭候选点",
+        "locationType": "candidate",
+        "status": "planned",
+        "brand": "海岚咖啡",
+        "region": "崂山区",
+        "address": "金家岭示例候选地址",
+        "plannedAt": "2026-05-20",
+        "selectionStage": "初筛",
+        "selectionOwner": "拓展一组",
+        "tradeAreaRadius": 1500,
+        "footTraffic": 24600,
+        "rent": 58000,
+        "parking": 8,
+        "visibility": 9,
+        "competitorDistance": 1280,
+        "households": 18600,
+        "marker-color": "#a855f7",
+        "marker-symbol": "star"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QD-C02",
+      "geometry": { "type": "Point", "coordinates": [120.4255, 36.1218] },
+      "properties": {
+        "locationId": "QD-C02",
+        "name": "浮山后筹备店",
+        "locationType": "candidate",
+        "status": "preparing",
+        "brand": "海岚咖啡",
+        "region": "市北区",
+        "address": "同安路示例候选地址",
+        "plannedAt": "2026-06-10",
+        "selectionStage": "现场尽调",
+        "selectionOwner": "拓展二组",
+        "tradeAreaRadius": 1500,
+        "footTraffic": 19800,
+        "rent": 42000,
+        "parking": 6,
+        "visibility": 7,
+        "competitorDistance": 820,
+        "households": 22800,
+        "marker-color": "#f59e0b",
+        "marker-symbol": "star"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QD-C03",
+      "geometry": { "type": "Point", "coordinates": [120.3922, 36.1558] },
+      "properties": {
+        "locationId": "QD-C03",
+        "name": "沧口候选点",
+        "locationType": "candidate",
+        "status": "planned",
+        "brand": "海岚咖啡",
+        "region": "李沧区",
+        "address": "沧口示例候选地址",
+        "plannedAt": "2026-07-15",
+        "selectionStage": "初筛",
+        "selectionOwner": "拓展三组",
+        "tradeAreaRadius": 1500,
+        "footTraffic": 15200,
+        "rent": 26000,
+        "parking": 9,
+        "visibility": 6,
+        "competitorDistance": 2100,
+        "households": 26500,
+        "marker-color": "#a855f7",
+        "marker-symbol": "star"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QD-X01",
+      "geometry": { "type": "Point", "coordinates": [120.3906, 36.0727] },
+      "properties": {
+        "locationId": "QD-X01",
+        "name": "竞品甲中心店",
+        "locationType": "competitor",
+        "status": "open",
+        "brand": "竞品甲",
+        "region": "市南区",
+        "address": "山东路示例地址",
+        "marker-color": "#dc2626",
+        "marker-symbol": "crosshairs"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "QD-X02",
+      "geometry": { "type": "Point", "coordinates": [120.4498, 36.115] },
+      "properties": {
+        "locationId": "QD-X02",
+        "name": "竞品乙崂山店",
+        "locationType": "competitor",
+        "status": "open",
+        "brand": "竞品乙",
+        "region": "崂山区",
+        "address": "辽阳东路示例地址",
+        "marker-color": "#dc2626",
+        "marker-symbol": "crosshairs"
+      }
+    }
+  ]
+}

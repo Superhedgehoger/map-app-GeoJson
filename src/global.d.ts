@@ -1,17 +1,46 @@
 import type { GeomapFeatureStore } from './store/feature-store';
+import type { GeomapRecordStore } from './store/record-store';
+import type { GeomapSelectionStore } from './store/selection-store';
+import type { GeomapMetricStore } from './store/metric-store';
 import type { exportGeoJson, importGeoJson, toSafeSpreadsheetRows } from './io/geojson';
 import type { neutralizeSpreadsheetFormula, sanitizeHtml, sanitizeUrl } from './security';
-import type { AppConfig, GeomapVariant } from './types';
+import type { AppConfig, GeoJsonFeatureCollection, GeomapVariant } from './types';
+import type { CollaborationApiClient } from './collaboration/api-client';
 
 declare global {
   interface Window {
+    XLSX?: {
+      read: (
+        data: ArrayBuffer,
+        options: { type: 'array' }
+      ) => { SheetNames: string[]; Sheets: Record<string, unknown> };
+      utils: {
+        sheet_to_json: (sheet: unknown, options: { defval: string }) => unknown[];
+      };
+    };
     GEOMAP_VARIANT?: GeomapVariant;
+    GEOMAP_PRIVATE_API_URL?: string;
     GEOMAP_FEATURES?: Readonly<{ eventTracker: boolean }>;
     __PRELOADED_DATA__?: unknown;
     __PRELOADED_META__?: unknown;
+    GeomapLegacyBridge?: Readonly<{
+      getFeatureCollection: () => GeoJsonFeatureCollection;
+      applyLocationFilter: (filter: { query?: string; region?: string; status?: string }) => void;
+      applyHistoricalState: (
+        state: { locationIds: string[]; statusById?: Record<string, string> } | null
+      ) => void;
+      applyMetricState: (
+        state: { values: Record<string, number>; metricKey: string } | null
+      ) => void;
+      focusLocation: (name: string) => boolean;
+    }>;
     GeomapCore: Readonly<{
       config: AppConfig;
       store: GeomapFeatureStore;
+      recordStore: GeomapRecordStore;
+      selectionStore: GeomapSelectionStore;
+      metricStore: GeomapMetricStore;
+      collaborationClient: CollaborationApiClient | null;
       importGeoJson: typeof importGeoJson;
       exportGeoJson: typeof exportGeoJson;
       toSafeSpreadsheetRows: typeof toSafeSpreadsheetRows;
@@ -20,6 +49,7 @@ declare global {
       neutralizeSpreadsheetFormula: typeof neutralizeSpreadsheetFormula;
       exportWorkspaceBackup: () => string;
       importWorkspaceBackup: (value: string) => void;
+      syncFeatures: (value: unknown) => void;
     }>;
   }
 }
