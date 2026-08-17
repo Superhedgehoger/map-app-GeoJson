@@ -1,30 +1,32 @@
-# GeoJSON Map Editor · GeoJSON 地图编辑器
+# Geomap 经营决策地图
 
 <div align="center">
 
-[![Version](https://img.shields.io/badge/version-v3.0.2-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v3.1.0--beta.1-blue.svg)](CHANGELOG.md)
 [![CI](https://github.com/Superhedgehoger/Geomap-app/actions/workflows/ci.yml/badge.svg)](https://github.com/Superhedgehoger/Geomap-app/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 **[在线体验](https://superhedgehoger.github.io/Geomap-app/) · [Lite 版](https://superhedgehoger.github.io/Geomap-app/?variant=lite) · [更新日志](CHANGELOG.md)**
 
-基于 Leaflet 的隐私友好型 GeoJSON 编辑工作台：绘制、分组、快照、表格、统计和离线分发集中在一个浏览器应用中。
+面向管理层、拓展和运营团队的门店网络决策工作台：先看清当前经营版图，再逐步连接经营历史、自定义选址模型和经营数据。
 
-Privacy-friendly, browser-based GeoJSON workspace for drawing, grouping, snapshots, tables, analytics, and portable distribution.
+Decision-oriented store-network workspace with private browser storage, map editing, history foundations, and portable offline distribution.
 
 </div>
 
 ![Geomap 示例数据全景](docs/images/geomap-overview.png)
 
-> 截图仅使用仓库内的 [`example.geojson`](example.geojson)，不包含真实业务数据。
+> 截图仅使用仓库内的虚构数据 [`examples/decision-demo.geojson`](examples/decision-demo.geojson)，不包含真实业务数据。
 
 ## 能做什么 · Highlights
 
 | 能力       | 说明                                                        |
 | ---------- | ----------------------------------------------------------- |
+| 决策总览   | 门店总数、在营/筹备/闭店状态、区域覆盖、搜索和联动筛选      |
+| 查看/编辑  | 管理层默认安全查看；显式进入编辑后使用完整地图维护能力      |
 | 地图编辑   | 标记、折线、多边形、矩形、圆形和样式编辑                    |
 | 数据管理   | GeoJSON、Excel、CSV 导入导出，地图/图层/表格四向联动        |
-| 组织与回溯 | 自定义分组、点聚合、历史快照和只读浏览模式                  |
+| 组织与回溯 | 自定义分组、点聚合、历史快照和 schema v2 经营时空数据底座   |
 | 数据洞察   | 虚拟化表格、实时统计看板、可配置标记弹窗                    |
 | 安全与隐私 | 数据保留在浏览器中，不上传；导入数据按不可信内容处理        |
 | 分发       | GitHub Pages、Full/Lite 共用源码、可生成真正自包含的单 HTML |
@@ -82,6 +84,8 @@ npm run capture:readme
 ```
 
 详细设计与迁移约束见 [`updatedocs/ARCHITECTURE_V3.md`](updatedocs/ARCHITECTURE_V3.md) 和 [`updatedocs/DEVELOPER_GUIDE.md`](updatedocs/DEVELOPER_GUIDE.md)。
+
+经营时间与自定义选址模型的顺序规划见 [`updatedocs/DECISION_PLATFORM_ROADMAP.md`](updatedocs/DECISION_PLATFORM_ROADMAP.md)；当前 beta 的字段与验收边界见 [`updatedocs/V3_1_PRODUCT_CONTRACT.md`](updatedocs/V3_1_PRODUCT_CONTRACT.md)。
 
 ## 浏览器与设备
 

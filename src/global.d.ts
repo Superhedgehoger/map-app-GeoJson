@@ -1,7 +1,7 @@
 import type { GeomapFeatureStore } from './store/feature-store';
 import type { exportGeoJson, importGeoJson, toSafeSpreadsheetRows } from './io/geojson';
 import type { neutralizeSpreadsheetFormula, sanitizeHtml, sanitizeUrl } from './security';
-import type { AppConfig, GeomapVariant } from './types';
+import type { AppConfig, GeoJsonFeatureCollection, GeomapVariant } from './types';
 
 declare global {
   interface Window {
@@ -9,6 +9,11 @@ declare global {
     GEOMAP_FEATURES?: Readonly<{ eventTracker: boolean }>;
     __PRELOADED_DATA__?: unknown;
     __PRELOADED_META__?: unknown;
+    GeomapLegacyBridge?: Readonly<{
+      getFeatureCollection: () => GeoJsonFeatureCollection;
+      applyLocationFilter: (filter: { query?: string; region?: string; status?: string }) => void;
+      focusLocation: (name: string) => boolean;
+    }>;
     GeomapCore: Readonly<{
       config: AppConfig;
       store: GeomapFeatureStore;
@@ -20,6 +25,7 @@ declare global {
       neutralizeSpreadsheetFormula: typeof neutralizeSpreadsheetFormula;
       exportWorkspaceBackup: () => string;
       importWorkspaceBackup: (value: string) => void;
+      syncFeatures: (value: unknown) => void;
     }>;
   }
 }

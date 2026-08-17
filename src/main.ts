@@ -1,4 +1,6 @@
 import { createAppConfig } from './config';
+import { DecisionShell } from './app/decision-shell';
+import './app/decision-shell.css';
 import { importGeoJson, exportGeoJson, toSafeSpreadsheetRows } from './io/geojson';
 import { sanitizeHtml, sanitizeUrl, neutralizeSpreadsheetFormula } from './security';
 import { GeomapFeatureStore } from './store/feature-store';
@@ -45,6 +47,12 @@ export function bootstrapApp(): void {
   const store = new GeomapFeatureStore(workspace);
   store.subscribe((nextState) => saveWorkspace(window.localStorage, nextState));
 
+  const syncFeatures = (value: unknown): void => {
+    const result = importGeoJson(value, config.variant);
+    if (result.errors.length > 0 && result.imported === 0) return;
+    store.setFeatures(result.collection.features);
+  };
+
   window.addEventListener('online', syncNetworkStatus);
   window.addEventListener('offline', syncNetworkStatus);
   syncNetworkStatus();
@@ -61,10 +69,17 @@ export function bootstrapApp(): void {
     sanitizeUrl,
     neutralizeSpreadsheetFormula,
     exportWorkspaceBackup: () => exportWorkspaceBackup(store.getState()),
-    importWorkspaceBackup: (value: string) => store.replace(importWorkspaceBackup(value))
+    importWorkspaceBackup: (value: string) => store.replace(importWorkspaceBackup(value)),
+    syncFeatures
   });
 
   document.documentElement.dataset.geomapCore = 'v3';
+  window.addEventListener('geomap:features-changed', (event) => {
+    syncFeatures((event as CustomEvent<unknown>).detail);
+  });
+  const initialLegacyCollection = window.GeomapLegacyBridge?.getFeatureCollection();
+  if (initialLegacyCollection?.features.length) syncFeatures(initialLegacyCollection);
+  new DecisionShell(store).mount();
 }
 
 bootstrapApp();

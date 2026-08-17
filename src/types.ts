@@ -55,11 +55,74 @@ export interface SnapshotState {
   features: GeoJsonFeature[];
 }
 
+export type LocationKind = 'store' | 'candidate' | 'competitor' | 'warehouse' | 'other';
+export type LocationStatus = 'planned' | 'preparing' | 'open' | 'paused' | 'closed' | 'unknown';
+
+export interface LocationEntity {
+  locationId: string;
+  name: string;
+  kind: LocationKind;
+  status: LocationStatus;
+  brand?: string;
+  region?: string;
+  address?: string;
+  openedAt?: string;
+  closedAt?: string;
+  geometry: GeoJsonGeometry | null;
+  sourceFeatureId?: string | number;
+  attributes: FeatureProperties;
+}
+
+export type BusinessRecordType = 'event' | 'metric' | 'state-change' | 'plan' | 'decision';
+
+export interface BusinessRecord {
+  recordId: string;
+  recordType: BusinessRecordType;
+  title: string;
+  validFrom: string;
+  validTo?: string;
+  recordedAt: string;
+  entityRefs: string[];
+  status: 'draft' | 'confirmed' | 'void';
+  sourceId?: string;
+  revisionOf?: string;
+  confidence: 'confirmed' | 'estimated' | 'forecast';
+  payload: Record<string, JsonValue>;
+  tags: string[];
+}
+
+export interface SelectionModelState {
+  modelId: string;
+  name: string;
+  version: number;
+  status: 'draft' | 'published' | 'retired';
+  definition: JsonValue;
+}
+
+export interface DataSourceState {
+  sourceId: string;
+  name: string;
+  kind: 'file' | 'api' | 'manual' | 'legacy';
+  updatedAt: string;
+  rowCount?: number;
+  qualityStatus: 'ready' | 'warning' | 'error' | 'unknown';
+}
+
 export interface WorkspaceState {
-  schemaVersion: 1;
+  schemaVersion: 2;
   updatedAt: string;
   view: MapViewState;
   features: GeoJsonFeature[];
+  locations: LocationEntity[];
+  areas: JsonValue[];
+  records: BusinessRecord[];
+  eventSeries: JsonValue[];
+  selectionModels: SelectionModelState[];
+  selectionScenarios: JsonValue[];
+  decisions: JsonValue[];
+  savedViews: JsonValue[];
+  dataSources: DataSourceState[];
+  audit: JsonValue[];
   groups: JsonValue[];
   snapshots: SnapshotState[];
   popupConfig: JsonValue | null;
