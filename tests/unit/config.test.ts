@@ -14,6 +14,7 @@ describe('variant configuration', () => {
     expect(createAppConfig({ search: '?variant=lite' }).capabilities).toEqual({
       eventTracker: false,
       siteSelection: false,
+      businessData: true,
       offlineEditing: true,
       fullMobileEditing: false
     });

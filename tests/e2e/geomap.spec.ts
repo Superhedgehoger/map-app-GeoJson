@@ -136,6 +136,61 @@ test('Full publishes an explainable selection model and saves a candidate decisi
   expect(errors).toEqual([]);
 });
 
+test('data center previews quality and revises duplicate business observations', async ({
+  page
+}) => {
+  const errors = await collectPageErrors(page);
+  await page.addInitScript((data) => {
+    window.__PRELOADED_DATA__ = data;
+  }, example);
+  await page.goto('/');
+  await page.locator('[data-section="data"]').click();
+  await expect(page.locator('#dataWorkspace')).toBeVisible();
+  await expect(page.locator('.data-kpis article').first()).toContainText('623,000');
+  await expect(page.locator('.data-location-table > button')).toHaveCount(6);
+  await page.locator('#dataRegion').selectOption({ label: '崂山区' });
+  await expect(page.locator('.data-kpis article').first()).toContainText('146,000');
+  await expect(page.locator('.data-location-table > button')).toHaveCount(1);
+  await page.locator('#dataRegion').selectOption('all');
+  await expect(page.locator('.data-kpis article').first()).toContainText('623,000');
+  await page.locator('#dataMapToggle').click();
+  expect(
+    await page
+      .locator('#dataWorkspace')
+      .evaluate((element) => element.getBoundingClientRect().width)
+  ).toBeLessThan(600);
+  await expect(page.locator('#map .leaflet-overlay-pane path')).not.toHaveCount(0);
+  await page.locator('#dataMapToggle').click();
+
+  await page.locator('#dataImport').click();
+  await page.locator('#metricFile').setInputFiles({
+    name: 'monthly.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from(
+      'locationId,periodStart,metricKey,value,target\nQD-001,2026-07,revenue,130000,128000\nQD-002,2026-08,revenue,121000,120000'
+    )
+  });
+  await expect(page.locator('.metric-mapping')).toBeVisible();
+  await page.locator('#metricPreview').click();
+  await expect(page.locator('.metric-quality-kpis')).toContainText('可入库 2');
+  await expect(page.locator('.metric-quality-kpis')).toContainText('错误 0');
+  await expect(page.locator('.metric-quality-kpis')).toContainText('提示 1');
+  await page.locator('#metricCommit').click();
+  await expect(page.locator('#metricImportDialog')).not.toBeVisible();
+  await expect(page.locator('.data-message')).toContainText('修订 1 条');
+  expect(
+    await page.evaluate(() => ({
+      sources: window.GeomapCore.store.getState().dataSources.length,
+      revisions: window.GeomapCore.store.getState().records.filter((record) => record.revisionOf)
+        .length
+    }))
+  ).toMatchObject({ sources: 1, revisions: 1 });
+  await page.locator('#dataPeriod').fill('2026-08');
+  await page.locator('#dataPeriod').dispatchEvent('change');
+  await expect(page.locator('.data-kpis article').first()).toContainText('121,000');
+  expect(errors).toEqual([]);
+});
+
 test('Lite disables event tracking through the shared capability contract', async ({ page }) => {
   const errors = await collectPageErrors(page);
   await page.goto('/?variant=lite');

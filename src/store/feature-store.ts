@@ -1,8 +1,10 @@
 import type {
   BusinessRecord,
+  DataSourceState,
   FeatureStore,
   GeoJsonFeature,
   JsonValue,
+  MetricDefinition,
   SelectionDecisionState,
   SelectionModelState,
   SelectionScenarioState,
@@ -70,6 +72,16 @@ export class GeomapFeatureStore implements FeatureStore {
 
   setSavedViews(savedViews: readonly JsonValue[]): void {
     this.#state.savedViews = clone([...savedViews]);
+    this.#touch();
+  }
+
+  setMetricDefinitions(definitions: readonly MetricDefinition[]): void {
+    this.#state.metricDefinitions = clone([...definitions]);
+    this.#touch();
+  }
+
+  setDataSources(sources: readonly DataSourceState[]): void {
+    this.#state.dataSources = clone([...sources]);
     this.#touch();
   }
 

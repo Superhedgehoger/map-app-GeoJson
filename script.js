@@ -5655,10 +5655,41 @@ function focusDecisionLocation(name) {
     return true;
 }
 
+let decisionMetricLayer = null;
+function applyDecisionMetricState(state) {
+    if (decisionMetricLayer) {
+        map.removeLayer(decisionMetricLayer);
+        decisionMetricLayer = null;
+    }
+    if (!state || !state.values) return;
+    decisionMetricLayer = L.layerGroup();
+    getDecisionMarkers().forEach(marker => {
+        const props = marker.feature?.properties || {};
+        const locationId = String(props.locationId || props.storeId || props.门店编号 || props.门店ID || marker.feature?.id || '');
+        const value = Number(state.values[locationId]);
+        if (!Number.isFinite(value)) return;
+        const ratio = Math.max(0, Math.min(1, value));
+        const red = Math.round(239 - ratio * 202);
+        const green = Math.round(68 + ratio * 131);
+        const blue = Math.round(68 + ratio * 167);
+        L.circleMarker(marker.getLatLng(), {
+            radius: 7 + ratio * 11,
+            color: `rgb(${red},${green},${blue})`,
+            fillColor: `rgb(${red},${green},${blue})`,
+            fillOpacity: 0.34,
+            weight: 2,
+            interactive: false,
+            pane: 'overlayPane'
+        }).addTo(decisionMetricLayer);
+    });
+    decisionMetricLayer.addTo(map);
+}
+
 window.GeomapLegacyBridge = Object.freeze({
     getFeatureCollection: collectDecisionFeatureCollection,
     applyLocationFilter: applyDecisionLocationFilter,
     applyHistoricalState: applyDecisionHistoricalState,
+    applyMetricState: applyDecisionMetricState,
     focusLocation: focusDecisionLocation
 });
 

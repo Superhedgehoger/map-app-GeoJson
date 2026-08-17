@@ -2,14 +2,17 @@ import { createAppConfig } from './config';
 import { DecisionShell } from './app/decision-shell';
 import { HistoryWorkspace } from './app/history-workspace';
 import { SelectionWorkspace } from './app/selection-workspace';
+import { DataWorkspace } from './app/data-workspace';
 import './app/decision-shell.css';
 import './app/history-workspace.css';
 import './app/selection-workspace.css';
+import './app/data-workspace.css';
 import { importGeoJson, exportGeoJson, toSafeSpreadsheetRows } from './io/geojson';
 import { sanitizeHtml, sanitizeUrl, neutralizeSpreadsheetFormula } from './security';
 import { GeomapFeatureStore } from './store/feature-store';
 import { GeomapRecordStore } from './store/record-store';
 import { GeomapSelectionStore } from './store/selection-store';
+import { GeomapMetricStore } from './store/metric-store';
 import {
   exportWorkspaceBackup,
   importWorkspaceBackup,
@@ -51,9 +54,10 @@ export function bootstrapApp(): void {
   const config = createAppConfig({ explicitVariant: window.GEOMAP_VARIANT });
   const workspace = loadWorkspace(window.localStorage);
   const store = new GeomapFeatureStore(workspace);
+  store.subscribe((nextState) => saveWorkspace(window.localStorage, nextState));
   const recordStore = new GeomapRecordStore(store, config.capabilities.eventTracker);
   const selectionStore = new GeomapSelectionStore(store);
-  store.subscribe((nextState) => saveWorkspace(window.localStorage, nextState));
+  const metricStore = new GeomapMetricStore(store, recordStore);
 
   const syncFeatures = (value: unknown): void => {
     const result = importGeoJson(value, config.variant);
@@ -73,6 +77,7 @@ export function bootstrapApp(): void {
     store,
     recordStore,
     selectionStore,
+    metricStore,
     importGeoJson,
     exportGeoJson,
     toSafeSpreadsheetRows,
@@ -93,10 +98,12 @@ export function bootstrapApp(): void {
   new DecisionShell(
     store,
     config.capabilities.eventTracker,
-    config.capabilities.siteSelection
+    config.capabilities.siteSelection,
+    config.capabilities.businessData
   ).mount();
   new HistoryWorkspace(store, recordStore).mount();
   new SelectionWorkspace(store, selectionStore).mount();
+  new DataWorkspace(store, metricStore).mount();
 }
 
 bootstrapApp();

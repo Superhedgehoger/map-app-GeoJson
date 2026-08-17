@@ -27,6 +27,7 @@ export function createAppConfig(input: ConfigInput = {}): AppConfig {
     capabilities: Object.freeze({
       eventTracker: variant === 'full',
       siteSelection: variant === 'full',
+      businessData: true,
       offlineEditing: true,
       fullMobileEditing: false
     })

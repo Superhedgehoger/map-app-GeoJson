@@ -1,12 +1,22 @@
 import type { GeomapFeatureStore } from './store/feature-store';
 import type { GeomapRecordStore } from './store/record-store';
 import type { GeomapSelectionStore } from './store/selection-store';
+import type { GeomapMetricStore } from './store/metric-store';
 import type { exportGeoJson, importGeoJson, toSafeSpreadsheetRows } from './io/geojson';
 import type { neutralizeSpreadsheetFormula, sanitizeHtml, sanitizeUrl } from './security';
 import type { AppConfig, GeoJsonFeatureCollection, GeomapVariant } from './types';
 
 declare global {
   interface Window {
+    XLSX?: {
+      read: (
+        data: ArrayBuffer,
+        options: { type: 'array' }
+      ) => { SheetNames: string[]; Sheets: Record<string, unknown> };
+      utils: {
+        sheet_to_json: (sheet: unknown, options: { defval: string }) => unknown[];
+      };
+    };
     GEOMAP_VARIANT?: GeomapVariant;
     GEOMAP_FEATURES?: Readonly<{ eventTracker: boolean }>;
     __PRELOADED_DATA__?: unknown;
@@ -17,6 +27,9 @@ declare global {
       applyHistoricalState: (
         state: { locationIds: string[]; statusById?: Record<string, string> } | null
       ) => void;
+      applyMetricState: (
+        state: { values: Record<string, number>; metricKey: string } | null
+      ) => void;
       focusLocation: (name: string) => boolean;
     }>;
     GeomapCore: Readonly<{
@@ -24,6 +37,7 @@ declare global {
       store: GeomapFeatureStore;
       recordStore: GeomapRecordStore;
       selectionStore: GeomapSelectionStore;
+      metricStore: GeomapMetricStore;
       importGeoJson: typeof importGeoJson;
       exportGeoJson: typeof exportGeoJson;
       toSafeSpreadsheetRows: typeof toSafeSpreadsheetRows;

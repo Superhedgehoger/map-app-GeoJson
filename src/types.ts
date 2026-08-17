@@ -37,6 +37,7 @@ export interface AppConfig {
   capabilities: {
     eventTracker: boolean;
     siteSelection: boolean;
+    businessData: boolean;
     offlineEditing: boolean;
     fullMobileEditing: boolean;
   };
@@ -241,6 +242,83 @@ export interface SelectionDecisionState {
   decidedAt: string;
 }
 
+export type MetricPeriodicity = 'day' | 'week' | 'month' | 'quarter' | 'year';
+export type MetricAggregation = 'sum' | 'average' | 'latest' | 'minimum' | 'maximum';
+
+export interface MetricDefinition {
+  metricKey: string;
+  name: string;
+  unit: string;
+  periodicity: MetricPeriodicity;
+  aggregation: MetricAggregation;
+  format: 'number' | 'currency' | 'percent';
+  description: string;
+  healthyMin?: number;
+  healthyMax?: number;
+}
+
+export interface MetricImportMapping {
+  locationId: string;
+  periodStart: string;
+  periodEnd?: string;
+  metricKey: string;
+  value: string;
+  unit?: string;
+  target?: string;
+}
+
+export type MetricQualityCode =
+  | 'missing-required'
+  | 'unmatched-location'
+  | 'invalid-number'
+  | 'invalid-period'
+  | 'duplicate-file'
+  | 'duplicate-existing'
+  | 'outlier';
+
+export interface MetricQualityIssue {
+  row: number;
+  code: MetricQualityCode;
+  severity: 'error' | 'warning';
+  message: string;
+}
+
+export interface NormalizedMetricRow {
+  row: number;
+  key: string;
+  locationId: string;
+  periodStart: string;
+  periodEnd: string;
+  metricKey: string;
+  value: number;
+  unit?: string;
+  target?: number;
+  existingRecordId?: string;
+}
+
+export interface MetricImportPreview {
+  sourceName: string;
+  totalRows: number;
+  validRows: NormalizedMetricRow[];
+  issues: MetricQualityIssue[];
+}
+
+export interface MetricImportCommitResult {
+  inserted: number;
+  updated: number;
+  skipped: number;
+  source: DataSourceState;
+}
+
+export interface DataSourceAdapter<TInput = unknown> {
+  kind: DataSourceState['kind'];
+  preview(
+    input: TInput,
+    mapping: MetricImportMapping,
+    workspace: Pick<WorkspaceState, 'locations' | 'records' | 'metricDefinitions'>
+  ): Promise<MetricImportPreview>;
+}
+
 export interface DataSourceState {
   sourceId: string;
   name: string;
@@ -248,6 +326,10 @@ export interface DataSourceState {
   updatedAt: string;
   rowCount?: number;
   qualityStatus: 'ready' | 'warning' | 'error' | 'unknown';
+  version?: number;
+  columns?: string[];
+  mapping?: MetricImportMapping;
+  issueCount?: number;
 }
 
 export interface WorkspaceState {
@@ -258,6 +340,7 @@ export interface WorkspaceState {
   locations: LocationEntity[];
   areas: JsonValue[];
   records: BusinessRecord[];
+  metricDefinitions: MetricDefinition[];
   eventSeries: JsonValue[];
   selectionModels: SelectionModelState[];
   selectionScenarios: SelectionScenarioState[];
@@ -303,6 +386,8 @@ export interface FeatureStore {
   setRecords(records: readonly BusinessRecord[]): void;
   upsertRecord(record: BusinessRecord): void;
   setSavedViews(savedViews: readonly JsonValue[]): void;
+  setMetricDefinitions(definitions: readonly MetricDefinition[]): void;
+  setDataSources(sources: readonly DataSourceState[]): void;
   setSelectionModels(models: readonly SelectionModelState[]): void;
   setSelectionScenarios(scenarios: readonly SelectionScenarioState[]): void;
   setDecisions(decisions: readonly SelectionDecisionState[]): void;

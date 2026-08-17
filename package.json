@@ -1,6 +1,6 @@
 {
   "name": "geomap-app",
-  "version": "3.3.0-beta.1",
+  "version": "3.4.0-beta.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,6 +15,7 @@
     "capture:readme": "node scripts/capture-readme.mjs",
     "capture:history": "node scripts/capture-history.mjs",
     "capture:selection": "node scripts/capture-selection.mjs",
+    "capture:data": "node scripts/capture-data.mjs",
     "format": "prettier --write src tests scripts *.json *.md",
     "format:check": "prettier --check src tests scripts *.json *.md",
     "lint": "eslint src tests scripts",

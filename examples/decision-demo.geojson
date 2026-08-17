@@ -26,6 +26,7 @@
             "createdAt": "2026-06-01T00:00:00Z",
             "metricKey": "revenue",
             "value": 120000,
+            "target": 122000,
             "unit": "元"
           },
           {
@@ -35,6 +36,7 @@
             "createdAt": "2026-07-01T00:00:00Z",
             "metricKey": "revenue",
             "value": 125000,
+            "target": 128000,
             "unit": "元"
           }
         ],
@@ -74,6 +76,7 @@
             "createdAt": "2026-06-01T00:00:00Z",
             "metricKey": "revenue",
             "value": 110000,
+            "target": 112000,
             "unit": "元"
           },
           {
@@ -83,6 +86,7 @@
             "createdAt": "2026-07-01T00:00:00Z",
             "metricKey": "revenue",
             "value": 118000,
+            "target": 116000,
             "unit": "元"
           }
         ],
@@ -103,6 +107,28 @@
         "region": "市北区",
         "address": "台东一路示例地址 3 号",
         "openedAt": "2021-10-01",
+        "businessRecords": [
+          {
+            "id": "QD-003-M-2026-06",
+            "recordType": "metric",
+            "name": "revenue 2026-06",
+            "createdAt": "2026-06-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 96000,
+            "target": 100000,
+            "unit": "元"
+          },
+          {
+            "id": "QD-003-M-2026-07",
+            "recordType": "metric",
+            "name": "revenue 2026-07",
+            "createdAt": "2026-07-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 101000,
+            "target": 102000,
+            "unit": "元"
+          }
+        ],
         "marker-color": "#2563eb",
         "marker-symbol": "shop"
       }
@@ -130,6 +156,28 @@
             "createdAt": "2026-07-05T08:30:00+08:00"
           }
         ],
+        "businessRecords": [
+          {
+            "id": "QD-004-M-2026-06",
+            "recordType": "metric",
+            "name": "revenue 2026-06",
+            "createdAt": "2026-06-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 84000,
+            "target": 95000,
+            "unit": "元"
+          },
+          {
+            "id": "QD-004-M-2026-07",
+            "recordType": "metric",
+            "name": "revenue 2026-07",
+            "createdAt": "2026-07-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 39000,
+            "target": 95000,
+            "unit": "元"
+          }
+        ],
         "marker-color": "#f59e0b",
         "marker-symbol": "shop"
       }
@@ -147,6 +195,28 @@
         "region": "崂山区",
         "address": "深圳路示例地址 5 号",
         "openedAt": "2024-01-12",
+        "businessRecords": [
+          {
+            "id": "QD-005-M-2026-06",
+            "recordType": "metric",
+            "name": "revenue 2026-06",
+            "createdAt": "2026-06-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 132000,
+            "target": 125000,
+            "unit": "元"
+          },
+          {
+            "id": "QD-005-M-2026-07",
+            "recordType": "metric",
+            "name": "revenue 2026-07",
+            "createdAt": "2026-07-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 146000,
+            "target": 130000,
+            "unit": "元"
+          }
+        ],
         "marker-color": "#2563eb",
         "marker-symbol": "shop"
       }
@@ -164,6 +234,28 @@
         "region": "李沧区",
         "address": "夏庄路示例地址 6 号",
         "openedAt": "2020-08-15",
+        "businessRecords": [
+          {
+            "id": "QD-006-M-2026-06",
+            "recordType": "metric",
+            "name": "revenue 2026-06",
+            "createdAt": "2026-06-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 89000,
+            "target": 90000,
+            "unit": "元"
+          },
+          {
+            "id": "QD-006-M-2026-07",
+            "recordType": "metric",
+            "name": "revenue 2026-07",
+            "createdAt": "2026-07-01T00:00:00Z",
+            "metricKey": "revenue",
+            "value": 94000,
+            "target": 92000,
+            "unit": "元"
+          }
+        ],
         "marker-color": "#2563eb",
         "marker-symbol": "shop"
       }

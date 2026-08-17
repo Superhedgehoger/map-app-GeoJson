@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![Version](https://img.shields.io/badge/version-v3.3.0--beta.1-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v3.4.0--beta.1-blue.svg)](CHANGELOG.md)
 [![CI](https://github.com/Superhedgehoger/Geomap-app/actions/workflows/ci.yml/badge.svg)](https://github.com/Superhedgehoger/Geomap-app/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -29,6 +29,7 @@ Decision-oriented store-network workspace with private browser storage, map edit
 | 组织与回溯 | 自定义分组、点聚合、历史快照和 schema v2 经营时空数据底座   |
 | 经营时间   | 时间回放、五类记录、批量指标、A/B 差异、专题线和复盘视图    |
 | 选址模型   | 四类模板、受限公式、版本发布、候选排行、贡献解释和决策报告  |
+| 经营数据   | CSV/Excel 映射、质量预览、指标口径、KPI、趋势、排行与异常   |
 | 数据洞察   | 虚拟化表格、实时统计看板、可配置标记弹窗                    |
 | 安全与隐私 | 数据保留在浏览器中，不上传；导入数据按不可信内容处理        |
 | 分发       | GitHub Pages、Full/Lite 共用源码、可生成真正自包含的单 HTML |
@@ -61,6 +62,7 @@ npm run build:release
 | 绘制、分组、表格、快照、看板 |  ✅  |        ✅        |
 | 事件追踪器及事件字段         |  ✅  |        ❌        |
 | 自定义选址模型与决策情景     |  ✅  |        ❌        |
+| 经营指标导入、质量与分析     |  ✅  |        ✅        |
 | 访问方式                     | `/`  | `/?variant=lite` |
 
 Lite 是公开能力配置，不维护第二套业务源码；事件数据在 Lite 的导入、显示和导出边界都会被移除。
@@ -101,6 +103,12 @@ npm run capture:readme
 ![Geomap 自定义选址模型](docs/images/geomap-selection.png)
 
 业务管理员可从商场店、临街店、社区店或空白模板建立企业模型；发布版本不可覆盖，候选点总分可追溯到原始字段、规则和权重。完整边界见 [`updatedocs/V3_3_PRODUCT_CONTRACT.md`](updatedocs/V3_3_PRODUCT_CONTRACT.md)。
+
+### 经营数据中心预览
+
+![Geomap 经营数据中心](docs/images/geomap-business-data.png)
+
+CSV/Excel 在浏览器本地完成字段映射和质量预览；重复观测按复合主键明确更新、跳过或阻止。KPI、趋势、区域排行、门店明细和地图使用同一指标与筛选。完整边界见 [`updatedocs/V3_4_PRODUCT_CONTRACT.md`](updatedocs/V3_4_PRODUCT_CONTRACT.md)。
 
 ## 浏览器与设备
 
