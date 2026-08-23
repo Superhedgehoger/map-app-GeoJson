@@ -1,6 +1,6 @@
 {
   "name": "geomap-app",
-  "version": "4.0.0-beta.4",
+  "version": "4.1.0-beta.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -16,8 +16,8 @@
     "capture:history": "node scripts/capture-history.mjs",
     "capture:selection": "node scripts/capture-selection.mjs",
     "capture:data": "node scripts/capture-data.mjs",
-    "format": "prettier --write src tests scripts server updatedocs/V4_PRIVATE_DEPLOYMENT.md *.json *.md",
-    "format:check": "prettier --check src tests scripts server updatedocs/V4_PRIVATE_DEPLOYMENT.md *.json *.md",
+    "format": "prettier --write src tests scripts server updatedocs/V4_PRIVATE_DEPLOYMENT.md updatedocs/V4_1_APPROVAL_CONTRACT.md *.json *.md",
+    "format:check": "prettier --check src tests scripts server updatedocs/V4_PRIVATE_DEPLOYMENT.md updatedocs/V4_1_APPROVAL_CONTRACT.md *.json *.md",
     "lint": "eslint src tests scripts server",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

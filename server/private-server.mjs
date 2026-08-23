@@ -146,6 +146,32 @@ const server = createServer(async (request, response) => {
         origin
       );
     }
+    const approvalsMatch = match(pathname, /^\/api\/workspaces\/([^/]+)\/approvals$/);
+    if (request.method === 'GET' && approvalsMatch) {
+      return json(
+        response,
+        200,
+        { approvals: core.listApprovals(user, approvalsMatch[1]) },
+        origin
+      );
+    }
+    if (request.method === 'POST' && approvalsMatch) {
+      return json(
+        response,
+        201,
+        await core.createApproval(user, approvalsMatch[1], await body(request)),
+        origin
+      );
+    }
+    const approvalMatch = match(pathname, /^\/api\/workspaces\/([^/]+)\/approvals\/([^/]+)$/);
+    if (request.method === 'PATCH' && approvalMatch) {
+      return json(
+        response,
+        200,
+        await core.updateApproval(user, approvalMatch[1], approvalMatch[2], await body(request)),
+        origin
+      );
+    }
     const sharesMatch = match(pathname, /^\/api\/workspaces\/([^/]+)\/shares$/);
     if (request.method === 'POST' && sharesMatch) {
       return json(

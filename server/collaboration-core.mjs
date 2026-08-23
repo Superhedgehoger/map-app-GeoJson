@@ -13,6 +13,7 @@ function emptyState() {
     users: [],
     workspaces: [],
     comments: [],
+    approvals: [],
     shares: [],
     briefs: [],
     syncJobs: [],
@@ -307,6 +308,125 @@ export class CollaborationCore {
     });
     await this.#persist();
     return clone(comment);
+  }
+
+  listApprovals(user, workspaceId) {
+    this.#workspace(user, workspaceId, 'viewer');
+    return this.#state.approvals
+      .filter((approval) => approval.workspaceId === workspaceId)
+      .slice()
+      .reverse()
+      .map(({ snapshot: _snapshot, ...approval }) => clone(approval));
+  }
+
+  async createApproval(user, workspaceId, { entityRef, title, summary }) {
+    const workspace = this.#workspace(user, workspaceId, 'editor');
+    if (!workspace.state) {
+      throw new CollaborationError(409, 'workspace-empty', '请先保存工作区，再提交决策审批。');
+    }
+    const normalizedTitle = String(title ?? '').trim();
+    const normalizedSummary = String(summary ?? '').trim();
+    const normalizedEntityRef = String(entityRef ?? '').trim();
+    if (!normalizedTitle || normalizedTitle.length > 120) {
+      throw new CollaborationError(400, 'invalid-approval-title', '审批标题需要 1–120 个字符。');
+    }
+    if (!normalizedSummary || normalizedSummary.length > 4000) {
+      throw new CollaborationError(400, 'invalid-approval-summary', '决策摘要需要 1–4000 个字符。');
+    }
+    if (normalizedEntityRef.length > 200) {
+      throw new CollaborationError(400, 'invalid-entity-ref', '关联对象 ID 不能超过 200 个字符。');
+    }
+    const duplicate = this.#state.approvals.find(
+      (approval) =>
+        approval.workspaceId === workspaceId &&
+        approval.workspaceVersion === workspace.version &&
+        approval.requestedBy === user.userId &&
+        approval.status === 'pending'
+    );
+    if (duplicate) {
+      throw new CollaborationError(
+        409,
+        'approval-already-pending',
+        '当前版本已有你提交的待审批记录。'
+      );
+    }
+    const now = this.#now();
+    const approval = {
+      approvalId: randomUUID(),
+      workspaceId,
+      workspaceVersion: workspace.version,
+      entityRef: normalizedEntityRef || null,
+      title: normalizedTitle,
+      summary: normalizedSummary,
+      status: 'pending',
+      requestedBy: user.userId,
+      requestedAt: now,
+      reviewerId: null,
+      reviewedAt: null,
+      reviewComment: null,
+      snapshot: clone(workspace.state),
+      createdAt: now,
+      updatedAt: now
+    };
+    this.#state.approvals.push(approval);
+    this.#audit(user.userId, user.organizationId, workspaceId, 'approval.submit', {
+      approvalId: approval.approvalId,
+      workspaceVersion: workspace.version,
+      entityRef: approval.entityRef
+    });
+    await this.#persist();
+    const { snapshot: _snapshot, ...publicApproval } = approval;
+    return clone(publicApproval);
+  }
+
+  async updateApproval(user, workspaceId, approvalId, { decision, comment }) {
+    this.#workspace(user, workspaceId, 'viewer');
+    const approval = this.#state.approvals.find(
+      (item) => item.approvalId === approvalId && item.workspaceId === workspaceId
+    );
+    if (!approval) throw new CollaborationError(404, 'approval-not-found', '审批记录不存在。');
+    if (approval.status !== 'pending') {
+      throw new CollaborationError(409, 'approval-finalized', '审批已结束，不能重复处理。');
+    }
+    const normalizedDecision = String(decision ?? '');
+    const normalizedComment = String(comment ?? '').trim();
+    if (normalizedComment.length > 4000) {
+      throw new CollaborationError(400, 'invalid-review-comment', '审批意见不能超过 4000 个字符。');
+    }
+    if (normalizedDecision === 'cancelled') {
+      if (approval.requestedBy !== user.userId && (ROLE_LEVEL[user.role] ?? 0) < ROLE_LEVEL.admin) {
+        throw new CollaborationError(403, 'forbidden', '只有提交人或管理员可以撤回审批。');
+      }
+    } else {
+      this.#requireRole(user, 'admin');
+      if (!['approved', 'rejected'].includes(normalizedDecision)) {
+        throw new CollaborationError(
+          400,
+          'invalid-approval-decision',
+          '审批结果只能是批准或驳回。'
+        );
+      }
+      if (approval.requestedBy === user.userId) {
+        throw new CollaborationError(409, 'self-approval-forbidden', '提交人不能审批自己的决策。');
+      }
+      if (normalizedDecision === 'rejected' && !normalizedComment) {
+        throw new CollaborationError(400, 'review-comment-required', '驳回时必须填写审批意见。');
+      }
+    }
+    const now = this.#now();
+    approval.status = normalizedDecision;
+    approval.reviewerId = user.userId;
+    approval.reviewedAt = now;
+    approval.reviewComment = normalizedComment || null;
+    approval.updatedAt = now;
+    this.#audit(user.userId, user.organizationId, workspaceId, `approval.${normalizedDecision}`, {
+      approvalId,
+      workspaceVersion: approval.workspaceVersion,
+      comment: approval.reviewComment
+    });
+    await this.#persist();
+    const { snapshot: _snapshot, ...publicApproval } = approval;
+    return clone(publicApproval);
   }
 
   async createShare(user, workspaceId, { name, expiresAt }) {

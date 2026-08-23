@@ -4,6 +4,7 @@ import type { GeomapFeatureStore } from '../store/feature-store';
 import type {
   CollaborationOrganization,
   CollaborationUser,
+  DecisionApproval,
   RemoteWorkspace,
   RemoteWorkspaceSummary,
   WorkspaceComment
@@ -36,6 +37,7 @@ export class CollaborationWorkspace {
   #workspaces: RemoteWorkspaceSummary[] = [];
   #workspace: RemoteWorkspace | null = null;
   #comments: WorkspaceComment[] = [];
+  #approvals: DecisionApproval[] = [];
   #audit: AuditEntry[] = [];
   #syncJobs: SyncJob[] = [];
   #conflictVersion: number | null = null;
@@ -107,7 +109,10 @@ export class CollaborationWorkspace {
   async #selectWorkspace(workspaceId: string): Promise<void> {
     if (!this.#api) return;
     this.#workspace = await this.#api.getWorkspace(workspaceId);
-    this.#comments = await this.#api.listComments(workspaceId);
+    [this.#comments, this.#approvals] = await Promise.all([
+      this.#api.listComments(workspaceId),
+      this.#api.listApprovals(workspaceId)
+    ]);
     if (this.#user?.role === 'admin' || this.#user?.role === 'owner') {
       [this.#syncJobs, this.#audit] = await Promise.all([
         this.#api.listSyncJobs(workspaceId),
@@ -183,7 +188,7 @@ export class CollaborationWorkspace {
       <header class="collab-header"><div><span>${escapeHtml(this.#organization.name)}</span><h1>企业协作与发布</h1><p>${escapeHtml(this.#user.displayName)} · ${escapeHtml(this.#user.role)} · 私有 API</p></div><div><select id="collabWorkspace">${this.#workspaces.map((item) => `<option value="${escapeHtml(item.workspaceId)}"${item.workspaceId === this.#workspace!.workspaceId ? ' selected' : ''}>${escapeHtml(item.name)}</option>`).join('')}</select><button id="collabLogout" type="button">退出</button></div></header>
       ${this.#message ? `<div class="collab-message" role="status">${escapeHtml(this.#message)}</div>` : ''}
       ${this.#conflictVersion ? `<div class="collab-conflict" role="alert"><strong>检测到版本冲突</strong><span>服务器已是 v${this.#conflictVersion}。未覆盖他人的修改；请先拉取服务器版本，再重新核对本地改动。</span><button id="collabResolveConflict" type="button">拉取服务器版本</button></div>` : ''}
-      <div class="collab-kpis"><article><span>远端版本</span><strong>v${this.#workspace.version}</strong><small>${dateTime(this.#workspace.updatedAt)}</small></article><article><span>本地位置</span><strong>${this.#store.getState().locations.length}</strong><small>同步前请核对范围</small></article><article><span>开放评论</span><strong>${this.#comments.filter((item) => item.status === 'open').length}</strong><small>${this.#comments.length} 条全部评论</small></article><article><span>同步任务</span><strong>${this.#syncJobs.filter((item) => item.enabled).length}</strong><small>最短间隔 5 分钟</small></article></div>
+      <div class="collab-kpis"><article><span>远端版本</span><strong>v${this.#workspace.version}</strong><small>${dateTime(this.#workspace.updatedAt)}</small></article><article><span>本地位置</span><strong>${this.#store.getState().locations.length}</strong><small>同步前请核对范围</small></article><article><span>待审批</span><strong>${this.#approvals.filter((item) => item.status === 'pending').length}</strong><small>${this.#approvals.length} 条决策记录</small></article><article><span>开放评论</span><strong>${this.#comments.filter((item) => item.status === 'open').length}</strong><small>${this.#comments.length} 条全部评论</small></article><article><span>同步任务</span><strong>${this.#syncJobs.filter((item) => item.enabled).length}</strong><small>最短间隔 5 分钟</small></article></div>
       <div class="collab-actions"><button id="collabPull" type="button"><i class="fa-solid fa-download"></i> 拉取服务器版本</button><button id="collabPush" class="is-primary" type="button"${editable ? '' : ' disabled'}><i class="fa-solid fa-cloud-arrow-up"></i> 保存本地工作区</button><button id="collabShare" type="button"${editable ? '' : ' disabled'}>创建只读分享</button><button id="collabBrief" type="button">生成决策简报</button></div>
       <div class="collab-grid">
         <section><header><div><span>讨论</span><h2>实体评论与 @提醒</h2></div></header><form id="collabCommentForm"><input name="entityRef" placeholder="实体 ID（可选）" /><textarea name="body" required placeholder="输入评论，可使用 @同组织成员邮箱"></textarea><button type="submit">发表评论</button></form><div class="collab-list">${
@@ -205,6 +210,21 @@ export class CollaborationWorkspace {
             )
             .join('') || '<p>暂无审计记录。</p>'
         }</div>${admin ? '<button id="collabAddMember" type="button">添加组织成员</button><button id="collabAddSync" type="button">创建文件投递同步</button>' : '<p class="collab-hint">成员与同步配置仅管理员可见。</p>'}</section>
+        <section class="collab-approval-section"><header><div><span>决策审批</span><h2>把选址结论固化为可追溯决议</h2></div><small>审批对应提交时的远端版本；提交人不能审批自己的决策。</small></header>
+          ${
+            editable
+              ? `<form id="collabApprovalForm"><input name="entityRef" maxlength="200" placeholder="关联门店/候选点 ID（可选）" /><input name="title" maxlength="120" required placeholder="例：甲店签约决策" /><textarea name="summary" maxlength="4000" required placeholder="填写结论、依据、边界条件和需要管理层决定的事项"></textarea><button class="is-primary" type="submit">提交 v${this.#workspace.version} 审批</button></form>`
+              : '<p class="collab-hint">查看者可跟踪审批结果，不能提交新申请。</p>'
+          }
+          <div class="collab-list collab-approval-list">${
+            this.#approvals
+              .map(
+                (item) =>
+                  `<article data-approval-status="${escapeHtml(item.status)}"><div><strong>${escapeHtml(item.title)}</strong><em>${this.#approvalLabel(item.status)} · v${item.workspaceVersion}</em></div><p>${escapeHtml(item.summary)}</p><small>${escapeHtml(item.entityRef ?? '整个工作区')} · ${dateTime(item.requestedAt)}</small>${item.reviewComment ? `<blockquote>${escapeHtml(item.reviewComment)}</blockquote>` : ''}${item.status === 'pending' && admin && item.requestedBy !== this.#user!.userId ? `<textarea data-approval-comment="${escapeHtml(item.approvalId)}" maxlength="4000" placeholder="填写审批意见；驳回时必填"></textarea>` : ''}<div class="collab-approval-actions">${item.status === 'pending' && admin && item.requestedBy !== this.#user!.userId ? `<button data-approval="approved" data-approval-id="${escapeHtml(item.approvalId)}" type="button">批准</button><button data-approval="rejected" data-approval-id="${escapeHtml(item.approvalId)}" type="button">驳回</button>` : ''}${item.status === 'pending' && item.requestedBy === this.#user!.userId ? `<button data-approval="cancelled" data-approval-id="${escapeHtml(item.approvalId)}" type="button">撤回</button>` : ''}</div></article>`
+              )
+              .join('') || '<p>还没有决策审批。</p>'
+          }</div>
+        </section>
       </div>`;
     this.#bindReadyEvents();
   }
@@ -239,6 +259,24 @@ export class CollaborationWorkspace {
         event.preventDefault();
         void this.#comment(new FormData(event.currentTarget as HTMLFormElement));
       });
+    this.#root
+      ?.querySelector<HTMLFormElement>('#collabApprovalForm')
+      ?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        void this.#submitApproval(new FormData(event.currentTarget as HTMLFormElement));
+      });
+    this.#root
+      ?.querySelectorAll<HTMLButtonElement>('[data-approval][data-approval-id]')
+      .forEach((button) =>
+        button.addEventListener(
+          'click',
+          () =>
+            void this.#decideApproval(
+              button.dataset.approvalId!,
+              button.dataset.approval as 'approved' | 'rejected' | 'cancelled'
+            )
+        )
+      );
     this.#root
       ?.querySelectorAll<HTMLButtonElement>('[data-resolve]')
       .forEach((button) =>
@@ -331,6 +369,52 @@ export class CollaborationWorkspace {
     this.#render();
   }
 
+  async #submitApproval(form: FormData): Promise<void> {
+    if (!this.#api || !this.#workspace) return;
+    try {
+      const approval = await this.#api.createApproval(this.#workspace.workspaceId, {
+        entityRef: String(form.get('entityRef') ?? ''),
+        title: String(form.get('title') ?? ''),
+        summary: String(form.get('summary') ?? '')
+      });
+      await this.#refreshAuxiliary();
+      this.#message = `已提交 v${approval.workspaceVersion} 决策审批。`;
+    } catch (error) {
+      this.#message = error instanceof Error ? error.message : '审批提交失败。';
+    }
+    this.#render();
+  }
+
+  async #decideApproval(
+    approvalId: string,
+    decision: 'approved' | 'rejected' | 'cancelled'
+  ): Promise<void> {
+    if (!this.#api || !this.#workspace) return;
+    const comment =
+      this.#root?.querySelector<HTMLTextAreaElement>(
+        `[data-approval-comment="${CSS.escape(approvalId)}"]`
+      )?.value ?? '';
+    try {
+      const approval = await this.#api.updateApproval(
+        this.#workspace.workspaceId,
+        approvalId,
+        decision,
+        comment
+      );
+      await this.#refreshAuxiliary();
+      this.#message = `审批已${this.#approvalLabel(approval.status)}。`;
+    } catch (error) {
+      this.#message = error instanceof Error ? error.message : '审批处理失败。';
+    }
+    this.#render();
+  }
+
+  #approvalLabel(status: DecisionApproval['status']): string {
+    return { pending: '待审批', approved: '已批准', rejected: '已驳回', cancelled: '已撤回' }[
+      status
+    ];
+  }
+
   async #share(): Promise<void> {
     if (!this.#api || !this.#workspace) return;
     try {
@@ -395,7 +479,10 @@ export class CollaborationWorkspace {
 
   async #refreshAuxiliary(): Promise<void> {
     if (!this.#api || !this.#workspace) return;
-    this.#comments = await this.#api.listComments(this.#workspace.workspaceId);
+    [this.#comments, this.#approvals] = await Promise.all([
+      this.#api.listComments(this.#workspace.workspaceId),
+      this.#api.listApprovals(this.#workspace.workspaceId)
+    ]);
     if (this.#user?.role === 'admin' || this.#user?.role === 'owner') {
       [this.#syncJobs, this.#audit] = await Promise.all([
         this.#api.listSyncJobs(this.#workspace.workspaceId),
