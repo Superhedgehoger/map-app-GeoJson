@@ -96,6 +96,25 @@ export interface WorkspaceComment {
   resolvedBy: string | null;
 }
 
+export type DecisionApprovalStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+
+export interface DecisionApproval {
+  approvalId: string;
+  workspaceId: string;
+  workspaceVersion: number;
+  entityRef: string | null;
+  title: string;
+  summary: string;
+  status: DecisionApprovalStatus;
+  requestedBy: string;
+  requestedAt: string;
+  reviewerId: string | null;
+  reviewedAt: string | null;
+  reviewComment: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface MapViewState {
   center: [number, number];
   zoom: number;

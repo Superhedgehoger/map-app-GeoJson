@@ -214,6 +214,24 @@ test('private collaboration authenticates, saves with versioning and exposes con
 }) => {
   const errors = await collectPageErrors(page);
   let saveAttempts = 0;
+  const approvals: Array<Record<string, unknown>> = [
+    {
+      approvalId: 'approval-editor-1',
+      workspaceId: 'workspace-1',
+      workspaceVersion: 1,
+      entityRef: 'S1',
+      title: '甲店签约决策',
+      summary: '请管理层复核候选点投资边界。',
+      status: 'pending',
+      requestedBy: 'editor-1',
+      requestedAt: '2026-08-17T00:30:00.000Z',
+      reviewerId: null,
+      reviewedAt: null,
+      reviewComment: null,
+      createdAt: '2026-08-17T00:30:00.000Z',
+      updatedAt: '2026-08-17T00:30:00.000Z'
+    }
+  ];
   const workspace: Record<string, unknown> = {
     workspaceId: 'workspace-1',
     organizationId: 'organization-1',
@@ -265,6 +283,37 @@ test('private collaboration authenticates, saves with versioning and exposes con
       return fulfill({ workspaces: [{ ...workspace, state: undefined }] });
     if (path === '/api/workspaces/workspace-1' && request.method() === 'GET')
       return fulfill(workspace);
+    if (path.endsWith('/approvals') && request.method() === 'GET') return fulfill({ approvals });
+    if (path.endsWith('/approvals') && request.method() === 'POST') {
+      const submitted = request.postDataJSON();
+      const approval = {
+        approvalId: 'approval-owner-1',
+        workspaceId: 'workspace-1',
+        workspaceVersion: workspace.version,
+        ...submitted,
+        status: 'pending',
+        requestedBy: 'owner-1',
+        requestedAt: '2026-08-17T01:10:00.000Z',
+        reviewerId: null,
+        reviewedAt: null,
+        reviewComment: null,
+        createdAt: '2026-08-17T01:10:00.000Z',
+        updatedAt: '2026-08-17T01:10:00.000Z'
+      };
+      approvals.unshift(approval);
+      return fulfill(approval, 201);
+    }
+    if (path.endsWith('/approvals/approval-editor-1') && request.method() === 'PATCH') {
+      const approval = approvals.find((item) => item.approvalId === 'approval-editor-1')!;
+      Object.assign(approval, {
+        status: request.postDataJSON().decision,
+        reviewerId: 'owner-1',
+        reviewedAt: '2026-08-17T01:15:00.000Z',
+        reviewComment: request.postDataJSON().comment,
+        updatedAt: '2026-08-17T01:15:00.000Z'
+      });
+      return fulfill(approval);
+    }
     if (path.endsWith('/comments')) return fulfill({ comments: [] });
     if (path.endsWith('/sync-jobs')) return fulfill({ syncJobs: [] });
     if (path.endsWith('/audit')) return fulfill({ audit: [] });
@@ -301,6 +350,18 @@ test('private collaboration authenticates, saves with versioning and exposes con
   await expect(page.locator('.collab-header')).toContainText('测试经营公司');
   await page.locator('#collabPush').click();
   await expect(page.locator('.collab-message')).toContainText('服务器 v2');
+  await expect(page.locator('.collab-approval-list')).toContainText('甲店签约决策');
+  await page.locator('[data-approval-comment="approval-editor-1"]').fill('同意按当前版本执行。');
+  await page.locator('[data-approval="approved"]').click();
+  await expect(page.locator('.collab-approval-list')).toContainText('已批准');
+  await page.locator('#collabApprovalForm [name="entityRef"]').fill('S2');
+  await page.locator('#collabApprovalForm [name="title"]').fill('乙店签约决策');
+  await page
+    .locator('#collabApprovalForm [name="summary"]')
+    .fill('请核定乙店的租金上限和开业时间。');
+  await page.locator('#collabApprovalForm button[type="submit"]').click();
+  await expect(page.locator('.collab-message')).toContainText('决策审批');
+  await expect(page.locator('.collab-approval-list')).toContainText('乙店签约决策');
   await page.locator('#collabPush').click();
   await expect(page.locator('.collab-conflict')).toContainText('服务器已是 v3');
   expect(errors).toEqual([expect.stringContaining('409 (Conflict)')]);

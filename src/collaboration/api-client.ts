@@ -1,6 +1,7 @@
 import type {
   CollaborationOrganization,
   CollaborationUser,
+  DecisionApproval,
   OrganizationBrand,
   RemoteWorkspace,
   RemoteWorkspaceSummary,
@@ -141,6 +142,35 @@ export class CollaborationApiClient {
     return this.#request(
       `/api/workspaces/${encodeURIComponent(workspaceId)}/comments/${encodeURIComponent(commentId)}`,
       { method: 'PATCH', body: { resolved } }
+    );
+  }
+
+  async listApprovals(workspaceId: string): Promise<DecisionApproval[]> {
+    const value = await this.#request<{ approvals: DecisionApproval[] }>(
+      `/api/workspaces/${encodeURIComponent(workspaceId)}/approvals`
+    );
+    return value.approvals;
+  }
+
+  createApproval(
+    workspaceId: string,
+    value: { entityRef: string; title: string; summary: string }
+  ): Promise<DecisionApproval> {
+    return this.#request(`/api/workspaces/${encodeURIComponent(workspaceId)}/approvals`, {
+      method: 'POST',
+      body: value
+    });
+  }
+
+  updateApproval(
+    workspaceId: string,
+    approvalId: string,
+    decision: 'approved' | 'rejected' | 'cancelled',
+    comment: string
+  ): Promise<DecisionApproval> {
+    return this.#request(
+      `/api/workspaces/${encodeURIComponent(workspaceId)}/approvals/${encodeURIComponent(approvalId)}`,
+      { method: 'PATCH', body: { decision, comment } }
     );
   }
 
