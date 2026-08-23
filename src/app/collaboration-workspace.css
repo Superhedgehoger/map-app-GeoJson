@@ -238,58 +238,54 @@
   grid-template-columns: 160px 1fr auto;
   gap: 8px;
 }
-.collab-approval-section {
+.collab-action-section {
   grid-column: 1 / -1;
 }
-.collab-approval-section > header {
+.collab-action-section > header {
   display: flex;
   align-items: end;
   justify-content: space-between;
   gap: 16px;
 }
-.collab-approval-section > header > small {
+.collab-action-section > header > small {
   max-width: 480px;
   color: #94a3b8;
   font-size: 10px;
   line-height: 1.5;
 }
-.collab-grid #collabApprovalForm {
-  grid-template-columns: minmax(150px, 0.75fr) minmax(210px, 1fr) minmax(280px, 2fr) auto;
+.collab-grid #collabActionForm {
+  grid-template-columns: minmax(130px, 0.8fr) minmax(190px, 1.2fr) 90px minmax(190px, 1fr) 150px;
 }
-.collab-approval-list {
-  max-height: 420px;
+.collab-grid #collabActionForm label {
+  display: grid;
+  gap: 4px;
+  color: #94a3b8;
+  font-size: 9px;
 }
-.collab-approval-list article {
-  border-left: 3px solid #f59e0b;
-}
-.collab-approval-list article[data-approval-status='approved'] {
-  border-left-color: #22c55e;
-}
-.collab-approval-list article[data-approval-status='rejected'] {
-  border-left-color: #ef4444;
-}
-.collab-approval-list article[data-approval-status='cancelled'] {
-  border-left-color: #64748b;
-}
-.collab-approval-list blockquote {
-  margin: 9px 0 2px;
-  padding: 8px 10px;
-  color: #bae6fd;
-  background: #07111f;
-  border-left: 2px solid #22d3ee;
-  font-size: 11px;
-}
-.collab-approval-list textarea {
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 58px;
-  margin-top: 10px;
+.collab-grid #collabActionForm textarea {
+  grid-column: 1 / -2;
+  min-height: 62px;
   resize: vertical;
 }
-.collab-list .collab-approval-actions {
+.collab-action-list {
+  max-height: 420px;
+}
+.collab-action-list article {
+  border-left: 3px solid #f59e0b;
+}
+.collab-action-list article[data-action-status='doing'] {
+  border-left-color: #22d3ee;
+}
+.collab-action-list article[data-action-status='done'] {
+  border-left-color: #22c55e;
+}
+.collab-action-list article[data-overdue='true'] {
+  border-left-color: #ef4444;
+}
+.collab-list .collab-action-buttons {
   justify-content: flex-end;
 }
-.collab-list .collab-approval-actions button {
+.collab-list .collab-action-buttons button {
   float: none;
   min-height: 28px;
   margin: 8px 0 0;
@@ -371,10 +367,13 @@
   .collab-grid form {
     grid-template-columns: 1fr;
   }
-  .collab-grid #collabApprovalForm {
+  .collab-grid #collabActionForm {
     grid-template-columns: 1fr;
   }
-  .collab-approval-section > header {
+  .collab-grid #collabActionForm textarea {
+    grid-column: auto;
+  }
+  .collab-action-section > header {
     align-items: flex-start;
     flex-direction: column;
   }

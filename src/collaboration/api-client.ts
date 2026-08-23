@@ -1,11 +1,11 @@
 import type {
   CollaborationOrganization,
   CollaborationUser,
-  DecisionApproval,
   OrganizationBrand,
   RemoteWorkspace,
   RemoteWorkspaceSummary,
   WorkspaceComment,
+  WorkspaceActionItem,
   WorkspaceState
 } from '../types';
 
@@ -145,32 +145,38 @@ export class CollaborationApiClient {
     );
   }
 
-  async listApprovals(workspaceId: string): Promise<DecisionApproval[]> {
-    const value = await this.#request<{ approvals: DecisionApproval[] }>(
-      `/api/workspaces/${encodeURIComponent(workspaceId)}/approvals`
+  async listActionItems(workspaceId: string): Promise<WorkspaceActionItem[]> {
+    const value = await this.#request<{ actionItems: WorkspaceActionItem[] }>(
+      `/api/workspaces/${encodeURIComponent(workspaceId)}/action-items`
     );
-    return value.approvals;
+    return value.actionItems;
   }
 
-  createApproval(
+  createActionItem(
     workspaceId: string,
-    value: { entityRef: string; title: string; summary: string }
-  ): Promise<DecisionApproval> {
-    return this.#request(`/api/workspaces/${encodeURIComponent(workspaceId)}/approvals`, {
+    value: {
+      entityRef: string;
+      title: string;
+      description: string;
+      priority: 'low' | 'medium' | 'high' | 'critical';
+      ownerEmail: string;
+      dueAt: string;
+    }
+  ): Promise<WorkspaceActionItem> {
+    return this.#request(`/api/workspaces/${encodeURIComponent(workspaceId)}/action-items`, {
       method: 'POST',
       body: value
     });
   }
 
-  updateApproval(
+  updateActionItem(
     workspaceId: string,
-    approvalId: string,
-    decision: 'approved' | 'rejected' | 'cancelled',
-    comment: string
-  ): Promise<DecisionApproval> {
+    actionItemId: string,
+    status: 'todo' | 'doing' | 'done'
+  ): Promise<WorkspaceActionItem> {
     return this.#request(
-      `/api/workspaces/${encodeURIComponent(workspaceId)}/approvals/${encodeURIComponent(approvalId)}`,
-      { method: 'PATCH', body: { decision, comment } }
+      `/api/workspaces/${encodeURIComponent(workspaceId)}/action-items/${encodeURIComponent(actionItemId)}`,
+      { method: 'PATCH', body: { status } }
     );
   }
 

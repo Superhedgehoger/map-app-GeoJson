@@ -13,7 +13,7 @@ function emptyState() {
     users: [],
     workspaces: [],
     comments: [],
-    approvals: [],
+    actionItems: [],
     shares: [],
     briefs: [],
     syncJobs: [],
@@ -310,123 +310,114 @@ export class CollaborationCore {
     return clone(comment);
   }
 
-  listApprovals(user, workspaceId) {
+  listActionItems(user, workspaceId) {
     this.#workspace(user, workspaceId, 'viewer');
-    return this.#state.approvals
-      .filter((approval) => approval.workspaceId === workspaceId)
+    return this.#state.actionItems
+      .filter((item) => item.workspaceId === workspaceId)
       .slice()
       .reverse()
-      .map(({ snapshot: _snapshot, ...approval }) => clone(approval));
+      .map((item) => this.#publicActionItem(item));
   }
 
-  async createApproval(user, workspaceId, { entityRef, title, summary }) {
-    const workspace = this.#workspace(user, workspaceId, 'editor');
-    if (!workspace.state) {
-      throw new CollaborationError(409, 'workspace-empty', '请先保存工作区，再提交决策审批。');
-    }
+  async createActionItem(
+    user,
+    workspaceId,
+    { entityRef, title, description, priority, ownerEmail, dueAt }
+  ) {
+    this.#workspace(user, workspaceId, 'editor');
     const normalizedTitle = String(title ?? '').trim();
-    const normalizedSummary = String(summary ?? '').trim();
+    const normalizedDescription = String(description ?? '').trim();
     const normalizedEntityRef = String(entityRef ?? '').trim();
     if (!normalizedTitle || normalizedTitle.length > 120) {
-      throw new CollaborationError(400, 'invalid-approval-title', '审批标题需要 1–120 个字符。');
+      throw new CollaborationError(400, 'invalid-action-title', '事项标题需要 1–120 个字符。');
     }
-    if (!normalizedSummary || normalizedSummary.length > 4000) {
-      throw new CollaborationError(400, 'invalid-approval-summary', '决策摘要需要 1–4000 个字符。');
+    if (normalizedDescription.length > 4000) {
+      throw new CollaborationError(
+        400,
+        'invalid-action-description',
+        '事项说明不能超过 4000 个字符。'
+      );
     }
     if (normalizedEntityRef.length > 200) {
       throw new CollaborationError(400, 'invalid-entity-ref', '关联对象 ID 不能超过 200 个字符。');
     }
-    const duplicate = this.#state.approvals.find(
-      (approval) =>
-        approval.workspaceId === workspaceId &&
-        approval.workspaceVersion === workspace.version &&
-        approval.requestedBy === user.userId &&
-        approval.status === 'pending'
-    );
-    if (duplicate) {
-      throw new CollaborationError(
-        409,
-        'approval-already-pending',
-        '当前版本已有你提交的待审批记录。'
-      );
+    const normalizedPriority = String(priority ?? 'medium');
+    if (!['low', 'medium', 'high', 'critical'].includes(normalizedPriority)) {
+      throw new CollaborationError(400, 'invalid-action-priority', '事项优先级无效。');
+    }
+    const normalizedDueAt = String(dueAt ?? '').trim();
+    const dueDate = normalizedDueAt ? new Date(`${normalizedDueAt}T00:00:00Z`) : null;
+    if (
+      normalizedDueAt &&
+      (!/^\d{4}-\d{2}-\d{2}$/.test(normalizedDueAt) ||
+        Number.isNaN(dueDate.getTime()) ||
+        dueDate.toISOString().slice(0, 10) !== normalizedDueAt)
+    ) {
+      throw new CollaborationError(400, 'invalid-action-due-date', '事项截止日期无效。');
+    }
+    const owner = ownerEmail
+      ? this.#state.users.find(
+          (item) =>
+            item.organizationId === user.organizationId &&
+            item.active &&
+            item.email === this.#email(ownerEmail)
+        )
+      : user;
+    if (ownerEmail && !owner) {
+      throw new CollaborationError(404, 'action-owner-not-found', '责任人不是当前组织的有效成员。');
     }
     const now = this.#now();
-    const approval = {
-      approvalId: randomUUID(),
+    const actionItem = {
+      actionItemId: randomUUID(),
       workspaceId,
-      workspaceVersion: workspace.version,
       entityRef: normalizedEntityRef || null,
       title: normalizedTitle,
-      summary: normalizedSummary,
-      status: 'pending',
-      requestedBy: user.userId,
-      requestedAt: now,
-      reviewerId: null,
-      reviewedAt: null,
-      reviewComment: null,
-      snapshot: clone(workspace.state),
+      description: normalizedDescription,
+      priority: normalizedPriority,
+      status: 'todo',
+      ownerId: owner?.userId ?? null,
+      dueAt: normalizedDueAt || null,
+      createdBy: user.userId,
       createdAt: now,
+      updatedBy: user.userId,
+      completedAt: null,
       updatedAt: now
     };
-    this.#state.approvals.push(approval);
-    this.#audit(user.userId, user.organizationId, workspaceId, 'approval.submit', {
-      approvalId: approval.approvalId,
-      workspaceVersion: workspace.version,
-      entityRef: approval.entityRef
+    this.#state.actionItems.push(actionItem);
+    this.#audit(user.userId, user.organizationId, workspaceId, 'action-item.create', {
+      actionItemId: actionItem.actionItemId,
+      ownerId: actionItem.ownerId,
+      priority: actionItem.priority,
+      dueAt: actionItem.dueAt,
+      entityRef: actionItem.entityRef
     });
     await this.#persist();
-    const { snapshot: _snapshot, ...publicApproval } = approval;
-    return clone(publicApproval);
+    return this.#publicActionItem(actionItem);
   }
 
-  async updateApproval(user, workspaceId, approvalId, { decision, comment }) {
-    this.#workspace(user, workspaceId, 'viewer');
-    const approval = this.#state.approvals.find(
-      (item) => item.approvalId === approvalId && item.workspaceId === workspaceId
+  async updateActionItem(user, workspaceId, actionItemId, { status }) {
+    this.#workspace(user, workspaceId, 'editor');
+    const actionItem = this.#state.actionItems.find(
+      (item) => item.actionItemId === actionItemId && item.workspaceId === workspaceId
     );
-    if (!approval) throw new CollaborationError(404, 'approval-not-found', '审批记录不存在。');
-    if (approval.status !== 'pending') {
-      throw new CollaborationError(409, 'approval-finalized', '审批已结束，不能重复处理。');
+    if (!actionItem) {
+      throw new CollaborationError(404, 'action-item-not-found', '经营事项不存在。');
     }
-    const normalizedDecision = String(decision ?? '');
-    const normalizedComment = String(comment ?? '').trim();
-    if (normalizedComment.length > 4000) {
-      throw new CollaborationError(400, 'invalid-review-comment', '审批意见不能超过 4000 个字符。');
-    }
-    if (normalizedDecision === 'cancelled') {
-      if (approval.requestedBy !== user.userId && (ROLE_LEVEL[user.role] ?? 0) < ROLE_LEVEL.admin) {
-        throw new CollaborationError(403, 'forbidden', '只有提交人或管理员可以撤回审批。');
-      }
-    } else {
-      this.#requireRole(user, 'admin');
-      if (!['approved', 'rejected'].includes(normalizedDecision)) {
-        throw new CollaborationError(
-          400,
-          'invalid-approval-decision',
-          '审批结果只能是批准或驳回。'
-        );
-      }
-      if (approval.requestedBy === user.userId) {
-        throw new CollaborationError(409, 'self-approval-forbidden', '提交人不能审批自己的决策。');
-      }
-      if (normalizedDecision === 'rejected' && !normalizedComment) {
-        throw new CollaborationError(400, 'review-comment-required', '驳回时必须填写审批意见。');
-      }
+    const normalizedStatus = String(status ?? '');
+    if (!['todo', 'doing', 'done'].includes(normalizedStatus)) {
+      throw new CollaborationError(400, 'invalid-action-status', '事项状态无效。');
     }
     const now = this.#now();
-    approval.status = normalizedDecision;
-    approval.reviewerId = user.userId;
-    approval.reviewedAt = now;
-    approval.reviewComment = normalizedComment || null;
-    approval.updatedAt = now;
-    this.#audit(user.userId, user.organizationId, workspaceId, `approval.${normalizedDecision}`, {
-      approvalId,
-      workspaceVersion: approval.workspaceVersion,
-      comment: approval.reviewComment
+    actionItem.status = normalizedStatus;
+    actionItem.updatedBy = user.userId;
+    actionItem.updatedAt = now;
+    actionItem.completedAt = normalizedStatus === 'done' ? now : null;
+    this.#audit(user.userId, user.organizationId, workspaceId, 'action-item.status.update', {
+      actionItemId,
+      status: normalizedStatus
     });
     await this.#persist();
-    const { snapshot: _snapshot, ...publicApproval } = approval;
-    return clone(publicApproval);
+    return this.#publicActionItem(actionItem);
   }
 
   async createShare(user, workspaceId, { name, expiresAt }) {
@@ -581,6 +572,15 @@ export class CollaborationCore {
   #publicUser(user) {
     const { passwordHash: _passwordHash, ...safe } = user;
     return clone(safe);
+  }
+
+  #publicActionItem(actionItem) {
+    const owner = this.#state.users.find((item) => item.userId === actionItem.ownerId);
+    return clone({
+      ...actionItem,
+      ownerDisplayName: owner?.displayName ?? null,
+      ownerEmail: owner?.email ?? null
+    });
   }
 
   #email(value) {
