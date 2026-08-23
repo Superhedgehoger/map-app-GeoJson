@@ -24,15 +24,23 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          release_flag=""
+          case "$GITHUB_REF_NAME" in
+            *-*) release_flag="--prerelease" ;;
+          esac
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             gh release upload "$GITHUB_REF_NAME" \
               release/geomap-full.html \
               release/geomap-lite.html \
               --clobber
+            if [ -n "$release_flag" ]; then
+              gh release edit "$GITHUB_REF_NAME" --prerelease
+            fi
           else
             gh release create "$GITHUB_REF_NAME" \
               release/geomap-full.html \
               release/geomap-lite.html \
               --title "$GITHUB_REF_NAME" \
+              $release_flag \
               --generate-notes
           fi
