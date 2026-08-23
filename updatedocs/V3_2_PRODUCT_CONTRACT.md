@@ -33,7 +33,7 @@
 | `metric`       | 月度营收、订单、客流等长表观测值 | metricKey、value、unit、target   |
 | `state-change` | 筹备、在营、停业、闭店、迁址     | status、经纬度及需变更的业务字段 |
 | `plan`         | 计划、目标和预测                 | 目标值、负责人、预计完成时间     |
-| `decision`     | 决策结论与依据                   | 结论、理由、证据、审批或责任人   |
+| `decision`     | 决策结论与依据                   | 结论、理由、证据、责任人或来源   |
 
 ## v3.2 beta 边界
 

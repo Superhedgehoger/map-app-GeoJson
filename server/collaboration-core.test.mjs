@@ -123,23 +123,16 @@ test('expired sessions and shares are rejected', async () => {
   );
 });
 
-test('decision approvals bind a saved version and enforce separation of duties', async () => {
+test('operating action items track owners, due dates and status', async () => {
   const { core, owner, workspace } = await fixture();
-  await core.updateWorkspace(owner, workspace.workspaceId, 1, workspaceState());
   const editor = await core.addMember(owner, {
     email: 'editor@example.com',
-    displayName: '选址经理',
+    displayName: '运营经理',
     password: 'editor-password-123',
     role: 'editor'
   });
-  const admin = await core.addMember(owner, {
-    email: 'admin@example.com',
-    displayName: '决策委员',
-    password: 'admin-password-123',
-    role: 'admin'
-  });
   const viewer = await core.addMember(owner, {
-    email: 'approval-viewer@example.com',
+    email: 'action-viewer@example.com',
     displayName: '观察员',
     password: 'viewer-password-456',
     role: 'viewer'
@@ -147,56 +140,64 @@ test('decision approvals bind a saved version and enforce separation of duties',
   const authenticate = async (member, password) =>
     core.authenticate((await core.login({ email: member.email, password })).token);
   const editorUser = await authenticate(editor, 'editor-password-123');
-  const adminUser = await authenticate(admin, 'admin-password-123');
   const viewerUser = await authenticate(viewer, 'viewer-password-456');
 
   await assert.rejects(
-    core.createApproval(viewerUser, workspace.workspaceId, {
-      title: '越权申请',
-      summary: '不应创建'
+    core.createActionItem(viewerUser, workspace.workspaceId, {
+      title: '越权事项'
     }),
     (error) => error instanceof CollaborationError && error.code === 'forbidden'
   );
-  const approval = await core.createApproval(editorUser, workspace.workspaceId, {
+  await assert.rejects(
+    core.createActionItem(editorUser, workspace.workspaceId, {
+      title: '未知责任人',
+      ownerEmail: 'missing@example.com'
+    }),
+    (error) => error instanceof CollaborationError && error.code === 'action-owner-not-found'
+  );
+  await assert.rejects(
+    core.createActionItem(editorUser, workspace.workspaceId, {
+      title: '无效日期',
+      dueAt: '2026-02-31'
+    }),
+    (error) => error instanceof CollaborationError && error.code === 'invalid-action-due-date'
+  );
+  const actionItem = await core.createActionItem(editorUser, workspace.workspaceId, {
     entityRef: 'S1',
-    title: '甲店签约决策',
-    summary: '建议按当前选址结果进入合同谈判。'
+    title: '补充甲店晚间客流调研',
+    description: '连续三个工作日完成 18:00–21:00 客流抽样。',
+    priority: 'high',
+    ownerEmail: 'owner@example.com',
+    dueAt: '2026-08-20'
   });
-  assert.equal(approval.workspaceVersion, 2);
-  assert.equal(approval.status, 'pending');
-  assert.equal(core.listApprovals(viewerUser, workspace.workspaceId).length, 1);
+  assert.equal(actionItem.status, 'todo');
+  assert.equal(actionItem.ownerDisplayName, '管理员');
+  assert.equal(actionItem.priority, 'high');
+  assert.equal(core.listActionItems(viewerUser, workspace.workspaceId).length, 1);
   await assert.rejects(
-    core.updateApproval(editorUser, workspace.workspaceId, approval.approvalId, {
-      decision: 'approved',
-      comment: ''
+    core.updateActionItem(viewerUser, workspace.workspaceId, actionItem.actionItemId, {
+      status: 'doing'
     }),
     (error) => error instanceof CollaborationError && error.code === 'forbidden'
   );
-  await assert.rejects(
-    core.updateApproval(adminUser, workspace.workspaceId, approval.approvalId, {
-      decision: 'rejected',
-      comment: ''
-    }),
-    (error) => error instanceof CollaborationError && error.code === 'review-comment-required'
-  );
-  const reviewed = await core.updateApproval(
-    adminUser,
+  const doing = await core.updateActionItem(
+    editorUser,
     workspace.workspaceId,
-    approval.approvalId,
-    { decision: 'approved', comment: '同意，租金上限按简报执行。' }
+    actionItem.actionItemId,
+    { status: 'doing' }
   );
-  assert.equal(reviewed.status, 'approved');
-  assert.equal(reviewed.reviewerId, admin.userId);
-  await assert.rejects(
-    core.updateApproval(owner, workspace.workspaceId, approval.approvalId, {
-      decision: 'rejected',
-      comment: '重复审批'
-    }),
-    (error) => error instanceof CollaborationError && error.code === 'approval-finalized'
+  assert.equal(doing.status, 'doing');
+  const completed = await core.updateActionItem(
+    owner,
+    workspace.workspaceId,
+    actionItem.actionItemId,
+    { status: 'done' }
   );
+  assert.equal(completed.status, 'done');
+  assert.ok(completed.completedAt);
   assert.ok(
     core
       .listAudit(owner, workspace.workspaceId)
-      .some((entry) => entry.action === 'approval.approved')
+      .some((entry) => entry.action === 'action-item.status.update')
   );
 });

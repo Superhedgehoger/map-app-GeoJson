@@ -146,29 +146,34 @@ const server = createServer(async (request, response) => {
         origin
       );
     }
-    const approvalsMatch = match(pathname, /^\/api\/workspaces\/([^/]+)\/approvals$/);
-    if (request.method === 'GET' && approvalsMatch) {
+    const actionItemsMatch = match(pathname, /^\/api\/workspaces\/([^/]+)\/action-items$/);
+    if (request.method === 'GET' && actionItemsMatch) {
       return json(
         response,
         200,
-        { approvals: core.listApprovals(user, approvalsMatch[1]) },
+        { actionItems: core.listActionItems(user, actionItemsMatch[1]) },
         origin
       );
     }
-    if (request.method === 'POST' && approvalsMatch) {
+    if (request.method === 'POST' && actionItemsMatch) {
       return json(
         response,
         201,
-        await core.createApproval(user, approvalsMatch[1], await body(request)),
+        await core.createActionItem(user, actionItemsMatch[1], await body(request)),
         origin
       );
     }
-    const approvalMatch = match(pathname, /^\/api\/workspaces\/([^/]+)\/approvals\/([^/]+)$/);
-    if (request.method === 'PATCH' && approvalMatch) {
+    const actionItemMatch = match(pathname, /^\/api\/workspaces\/([^/]+)\/action-items\/([^/]+)$/);
+    if (request.method === 'PATCH' && actionItemMatch) {
       return json(
         response,
         200,
-        await core.updateApproval(user, approvalMatch[1], approvalMatch[2], await body(request)),
+        await core.updateActionItem(
+          user,
+          actionItemMatch[1],
+          actionItemMatch[2],
+          await body(request)
+        ),
         origin
       );
     }

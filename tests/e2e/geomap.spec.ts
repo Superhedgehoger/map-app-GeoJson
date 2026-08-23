@@ -214,21 +214,23 @@ test('private collaboration authenticates, saves with versioning and exposes con
 }) => {
   const errors = await collectPageErrors(page);
   let saveAttempts = 0;
-  const approvals: Array<Record<string, unknown>> = [
+  const actionItems: Array<Record<string, unknown>> = [
     {
-      approvalId: 'approval-editor-1',
+      actionItemId: 'action-editor-1',
       workspaceId: 'workspace-1',
-      workspaceVersion: 1,
       entityRef: 'S1',
-      title: '甲店签约决策',
-      summary: '请管理层复核候选点投资边界。',
-      status: 'pending',
-      requestedBy: 'editor-1',
-      requestedAt: '2026-08-17T00:30:00.000Z',
-      reviewerId: null,
-      reviewedAt: null,
-      reviewComment: null,
+      title: '补充甲店晚间客流调研',
+      description: '连续三个工作日完成客流抽样。',
+      priority: 'high',
+      status: 'todo',
+      ownerId: 'editor-1',
+      ownerDisplayName: '运营经理',
+      ownerEmail: 'editor@example.com',
+      dueAt: '2020-08-20',
+      createdBy: 'owner-1',
       createdAt: '2026-08-17T00:30:00.000Z',
+      updatedBy: 'owner-1',
+      completedAt: null,
       updatedAt: '2026-08-17T00:30:00.000Z'
     }
   ];
@@ -283,36 +285,35 @@ test('private collaboration authenticates, saves with versioning and exposes con
       return fulfill({ workspaces: [{ ...workspace, state: undefined }] });
     if (path === '/api/workspaces/workspace-1' && request.method() === 'GET')
       return fulfill(workspace);
-    if (path.endsWith('/approvals') && request.method() === 'GET') return fulfill({ approvals });
-    if (path.endsWith('/approvals') && request.method() === 'POST') {
+    if (path.endsWith('/action-items') && request.method() === 'GET')
+      return fulfill({ actionItems });
+    if (path.endsWith('/action-items') && request.method() === 'POST') {
       const submitted = request.postDataJSON();
-      const approval = {
-        approvalId: 'approval-owner-1',
+      const actionItem = {
+        actionItemId: 'action-owner-1',
         workspaceId: 'workspace-1',
-        workspaceVersion: workspace.version,
         ...submitted,
-        status: 'pending',
-        requestedBy: 'owner-1',
-        requestedAt: '2026-08-17T01:10:00.000Z',
-        reviewerId: null,
-        reviewedAt: null,
-        reviewComment: null,
+        status: 'todo',
+        ownerId: 'owner-1',
+        ownerDisplayName: '管理员',
+        ownerEmail: 'owner@example.com',
+        createdBy: 'owner-1',
         createdAt: '2026-08-17T01:10:00.000Z',
+        updatedBy: 'owner-1',
+        completedAt: null,
         updatedAt: '2026-08-17T01:10:00.000Z'
       };
-      approvals.unshift(approval);
-      return fulfill(approval, 201);
+      actionItems.unshift(actionItem);
+      return fulfill(actionItem, 201);
     }
-    if (path.endsWith('/approvals/approval-editor-1') && request.method() === 'PATCH') {
-      const approval = approvals.find((item) => item.approvalId === 'approval-editor-1')!;
-      Object.assign(approval, {
-        status: request.postDataJSON().decision,
-        reviewerId: 'owner-1',
-        reviewedAt: '2026-08-17T01:15:00.000Z',
-        reviewComment: request.postDataJSON().comment,
+    if (path.endsWith('/action-items/action-editor-1') && request.method() === 'PATCH') {
+      const actionItem = actionItems.find((item) => item.actionItemId === 'action-editor-1')!;
+      Object.assign(actionItem, {
+        status: request.postDataJSON().status,
+        updatedBy: 'owner-1',
         updatedAt: '2026-08-17T01:15:00.000Z'
       });
-      return fulfill(approval);
+      return fulfill(actionItem);
     }
     if (path.endsWith('/comments')) return fulfill({ comments: [] });
     if (path.endsWith('/sync-jobs')) return fulfill({ syncJobs: [] });
@@ -350,18 +351,18 @@ test('private collaboration authenticates, saves with versioning and exposes con
   await expect(page.locator('.collab-header')).toContainText('测试经营公司');
   await page.locator('#collabPush').click();
   await expect(page.locator('.collab-message')).toContainText('服务器 v2');
-  await expect(page.locator('.collab-approval-list')).toContainText('甲店签约决策');
-  await page.locator('[data-approval-comment="approval-editor-1"]').fill('同意按当前版本执行。');
-  await page.locator('[data-approval="approved"]').click();
-  await expect(page.locator('.collab-approval-list')).toContainText('已批准');
-  await page.locator('#collabApprovalForm [name="entityRef"]').fill('S2');
-  await page.locator('#collabApprovalForm [name="title"]').fill('乙店签约决策');
+  await expect(page.locator('.collab-action-list')).toContainText('补充甲店晚间客流调研');
+  await expect(page.locator('.collab-kpis')).toContainText('逾期事项');
+  await page.locator('[data-action-status-next="doing"]').click();
+  await expect(page.locator('.collab-action-list')).toContainText('进行中');
+  await page.locator('#collabActionForm [name="entityRef"]').fill('S2');
+  await page.locator('#collabActionForm [name="title"]').fill('核对乙店开业物料');
   await page
-    .locator('#collabApprovalForm [name="summary"]')
-    .fill('请核定乙店的租金上限和开业时间。');
-  await page.locator('#collabApprovalForm button[type="submit"]').click();
-  await expect(page.locator('.collab-message')).toContainText('决策审批');
-  await expect(page.locator('.collab-approval-list')).toContainText('乙店签约决策');
+    .locator('#collabActionForm [name="description"]')
+    .fill('确认招牌、收银和开业活动物料到店。');
+  await page.locator('#collabActionForm button[type="submit"]').click();
+  await expect(page.locator('.collab-message')).toContainText('经营事项已新增');
+  await expect(page.locator('.collab-action-list')).toContainText('核对乙店开业物料');
   await page.locator('#collabPush').click();
   await expect(page.locator('.collab-conflict')).toContainText('服务器已是 v3');
   expect(errors).toEqual([expect.stringContaining('409 (Conflict)')]);

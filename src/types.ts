@@ -96,23 +96,26 @@ export interface WorkspaceComment {
   resolvedBy: string | null;
 }
 
-export type DecisionApprovalStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+export type ActionItemPriority = 'low' | 'medium' | 'high' | 'critical';
+export type ActionItemStatus = 'todo' | 'doing' | 'done';
 
-export interface DecisionApproval {
-  approvalId: string;
+export interface WorkspaceActionItem {
+  actionItemId: string;
   workspaceId: string;
-  workspaceVersion: number;
   entityRef: string | null;
   title: string;
-  summary: string;
-  status: DecisionApprovalStatus;
-  requestedBy: string;
-  requestedAt: string;
-  reviewerId: string | null;
-  reviewedAt: string | null;
-  reviewComment: string | null;
+  description: string;
+  priority: ActionItemPriority;
+  status: ActionItemStatus;
+  ownerId: string | null;
+  ownerDisplayName: string | null;
+  ownerEmail: string | null;
+  dueAt: string | null;
+  createdBy: string;
   createdAt: string;
+  updatedBy: string;
   updatedAt: string;
+  completedAt: string | null;
 }
 
 export interface MapViewState {
